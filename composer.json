@@ -1,0 +1,14 @@
+{
+    "name": "admin/obrien",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Nam1107",
+            "email": "teenhainam2603@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "8.1.10",
+        "firebase/php-jwt": "^6.3"
+    }
+}
