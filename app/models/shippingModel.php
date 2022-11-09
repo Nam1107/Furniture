@@ -1,21 +1,21 @@
 <?php
 class shippingModel
 {
-    function create($orderID, $userID = 0)
+    function create($order_id, $userID = 0)
     {
         $shipping = [
-            "orderID" => $orderID,
+            "order_id" => $order_id,
             "description" => "Order has been created",
-            "createdAt" => currentTime(),
-            "createdBy" => $userID
+            "created_date" => currentTime(),
+            "created_by" => $userID
         ];
-        create('shippingDetail', $shipping);
+        create('shipping_detail', $shipping);
     }
-    function getList($orderID)
+    function getList($order_id)
     {
-        $shipping = custom("SELECT shippingDetail.description,shippingDetail.createdAt
-        from shippingDetail
-        WHERE orderID =  $orderID
+        $shipping = custom("SELECT shipping_detail.description,shipping_detail.created_date
+        from shipping_detail
+        WHERE order_id =  $order_id
         ");
         return $shipping;
     }

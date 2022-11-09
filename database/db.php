@@ -63,8 +63,8 @@ function selectAll($table, $conditions = [], $order = "")
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $result;
         }
-    } catch (Error) {
-        showError(400, "Errors: input value invalid");
+    } catch (Exception $e) {
+        showError(400, $e->getMessage());
         exit;
     }
 }
@@ -94,8 +94,8 @@ function Search($table, $conditions = [], $order = "")
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $result;
         }
-    } catch (Error) {
-        showError(400, "Errors: input value invalid");
+    } catch (Exception $e) {
+        showError(400, $e->getMessage());
         exit;
     }
 }
@@ -120,8 +120,8 @@ function selectOne($table, $conditions)
         } else {
             return $result[0];
         }
-    } catch (Error) {
-        showError(400, "Errors: input value invalid");
+    } catch (Exception $e) {
+        showError(400, $e->getMessage());
         exit;
     }
 }
@@ -150,8 +150,8 @@ function create($table, $conditions)
 
         $last_id = $conn->lastInsertId();
         return $last_id;
-    } catch (Error) {
-        showError(400, "Errors: input value invalid");
+    } catch (Exception $e) {
+        showError(400, $e->getMessage());
         exit;
     }
 }
@@ -176,8 +176,8 @@ function update($table, $where, $conditions)
         $stmt = executeQuerry($sql, $conditions);
 
         return $stmt->rowCount();
-    } catch (Error) {
-        showError(400, "Errors: input value invalid");
+    } catch (Exception $e) {
+        showError(400, $e->getMessage());
         exit;
     }
 }
@@ -198,8 +198,8 @@ function delete($table, $conditions)
         $stmt = executeQuerry($sql, $conditions);
 
         return $stmt->rowCount();
-    } catch (Error) {
-        showError(400, "Errors: input value invalid");
+    } catch (Exception $e) {
+        showError(400, $e->getMessage());
         exit;
     }
 }
@@ -212,8 +212,8 @@ function custom($sql)
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $result;
-    } catch (Error) {
-        showError(400, "Errors: input value invalid");
+    } catch (Exception $e) {
+        showError(400, $e->getMessage());
         exit;
     }
 }

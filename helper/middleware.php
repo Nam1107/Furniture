@@ -8,6 +8,7 @@ require_once './src/ExpiredException.php';
 
 use Firebase\JWT\Key;
 use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\JWT;
 
 class middleware extends Controllers
@@ -20,37 +21,51 @@ class middleware extends Controllers
 
     function authenToken()
     {
+
+        session_destroy();
+
         $headers = apache_request_headers();
         if (!isset($headers['Authorization'])) {
-            session_destroy();
+
             $res['status'] = 0;
             $res['errors'] = 'You need a token to access';
             return $res;
-            // $this->loadErrors(400, 'You need a token to access');
         }
         $token = $headers['Authorization'];
         $check = explode(" ", $token);
+
         try {
-            $jwt = JWT::decode($check[1],  new Key(TOKEN_SECRET, 'HS256'));
+            $key = base64_decode(TOKEN_SECRET);
+            $jwt = JWT::decode($check[1],  new Key($key, TOKEN_ALG));
             $data = json_decode(json_encode($jwt), true);
-            $id = $data['data']['id'];
-            $obj = custom("SELECT user.ID,user.role FROM user where ID = $id");
-            $_SESSION['user'] = $obj[0];
-            $res['status'] = 1;
-            $res['obj'] = $obj[0];
+
+            $name = $data['sub'];
+            $role = custom("
+                    SELECT `role_variation`.role_name,user.id
+                    FROM `role_variation`,`user`,user_role
+                    WHERE `user`.user_name = '$name'
+                    AND user_role.user_id = `user`.id
+                    AND `role_variation`.id = user_role.role_id
+            ");
+
+            $a = array();
+            if ($role) {
+                foreach ($role as $key => $each) {
+                    array_push($a, $each['role_name']);
+                }
+                // $_SESSION['user'] = array();
+
+                $_SESSION['user']['role'] = $a;
+                $_SESSION['user']['ID'] = $role[0]['id'];
+                $res['status'] = 1;
+                // $res['obj'] = $a;
+            } else   $res['status'] = 0;
             return $res;
-        } catch (ExpiredException) {
+        } catch (Exception $e) {
             session_destroy();
             $res['status'] = 0;
-            $res['errors'] = 'Expired token';
+            $res['errors'] = $e->getMessage();
             return $res;
-            // $this->loadErrors(400, 'Expired token');
-        } catch (Exception) {
-            session_destroy();
-            $res['status'] = 0;
-            $res['errors'] = 'Token verification failed';
-            return $res;
-            // $this->loadErrors(400, 'Token verification failed');
         }
     }
 
@@ -64,6 +79,7 @@ class middleware extends Controllers
     function userOnly()
     {
         $obj = $this->authenToken();
+
         if ($obj['status'] == 0) {
             // dd($obj);
             $this->loadErrors(400, $obj['errors']);
@@ -73,20 +89,29 @@ class middleware extends Controllers
     function adminOnly()
     {
         $this->userOnly();
-        if ($_SESSION['user']['role'] != 1) {
+        $role = $_SESSION['user']['role'];
+        if (!in_array("ROLE_ADMIN", $role)) {
             $this->loadErrors(400, 'You are not admin');
         }
+        // if ($_SESSION['user']['role'] != 2) {
+        //     $this->loadErrors(400, 'You are not admin');
+        // }
     }
     function shipperOnly()
     {
         $this->userOnly();
-        if ($_SESSION['user']['role'] != 2) {
-            $this->loadErrors(400, 'You are not shipper');
+        $role = $_SESSION['user']['role'];
+        if (!in_array("ROLE_SHIPPER", $role)) {
+            $this->loadErrors(400, 'You are not admin');
         }
+        // $this->userOnly();
+        // if ($_SESSION['user']['role'] != 3) {
+        //     $this->loadErrors(400, 'You are not shipper');
+        // }
     }
     function guestsOnly()
     {
-        if (isset($_SESSION['userID'])) {
+        if (isset($_SESSION['user'])) {
             $this->loadErrors(400, 'You have logged in');
         }
     }

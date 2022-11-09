@@ -5,15 +5,14 @@ class order extends Controllers
     public $validate_user;
     public $middle_ware;
     public $order_model;
+    public $delivery_model;
     public function __construct()
     {
         $this->order_model = $this->model('orderModel');
+        $this->delivery_model = $this->model('deliveryModel');
         $this->cart_model = $this->model('cartModel');
         $this->shipping_model = $this->model('shippingModel');
         $this->middle_ware = new middleware();
-        set_error_handler(function ($err_severity, $err_msg, $err_file, $err_line, array $err_context) {
-            throw new ErrorException($err_msg, 0, $err_severity, $err_file, $err_line);
-        }, E_WARNING);
     }
 
     public function createOrder()

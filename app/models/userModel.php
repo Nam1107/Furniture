@@ -21,10 +21,10 @@ class userModel
         $obj = custom("
         SELECT * FROM `user` WHERE email LIKE '%$email%' ORDER BY $sortBy $sortType LIMIT $perPage OFFSET $offset
         ");
-        $totalCount = custom("SELECT COUNT(*)  AS totalCount FROM  `user`");
+        $totalCount = custom("SELECT COUNT(*)  AS total_count FROM  `user`");
 
         $res['status'] = 1;
-        $res['totalCount'] = $totalCount[0]['totalCount'];
+        $res['total_count'] = $totalCount[0]['total_count'];
         $res['numOfPage'] = ceil($check);
         $res['page'] = $page;
         $res['obj'] = $obj;
@@ -34,17 +34,26 @@ class userModel
 
     public function getDetail($id)
     {
-        $obj = selectOne('user', ['ID' => $id]);
-        if (!$obj) {
-            http_response_code(404);
-            $res['status'] = 0;
-            $res['errors'] = 'Not found user by ID';
-            return $res;
+        $obj = custom("SELECT `user`.id,`user`.user_name,`user`.avatar,`user`.phone
+        FROM `user`
+        WHERE user.id = $id")[0];
+
+
+
+        $role = custom("SELECT role.role_name
+        FROM role,user_role
+        WHERE user_role.user_id = $id
+        AND role.id= user_role.role_id");
+
+        $a = array();
+
+        foreach ($role as $key => $each) {
+            array_push($a, $each['role_name']);
         }
-        $res['status'] = 1;
-        $res['msg'] = 'Success';
-        $res['obj'] = $obj;
-        return $res;
+
+        $obj['role'] = $a;
+
+        return $obj;
     }
 
     public function delete($id)
