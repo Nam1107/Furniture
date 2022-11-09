@@ -12,10 +12,11 @@ class orderModel extends Controllers
     function getDetail($order_id)
     {
         $order = custom("
-        SELECT `order`.id,`order`.status , `order`.created_date ,SUM(`order_detail`.unit_price*`order_detail`.quantity) AS total,  COUNT(`order_detail`.order_id) AS numOfProduct
-        FROM `order`,`order_detail`	
+        SELECT `order`.id,`order`.created_date ,`user`.user_name,`order`.status , `order`.address,SUM(`order_detail`.unit_price*`order_detail`.quantity) AS total,  COUNT(`order_detail`.order_id) AS numOfProduct
+        FROM `order`,`order_detail`	,`user`
         WHERE `order`.id = order_detail.order_id
         AND `order`.id = $order_id
+        AND user.id = order.user_id
         GROUP BY
         `order_detail`.order_id
         ");
@@ -26,9 +27,10 @@ class orderModel extends Controllers
 
         $shipping = $this->shipping_model->getList($order_id);
 
-        $product = custom("SELECT product.id, product.image,product.name,unit_price,quantity
-        FROM `product`,`order_detail`	
-        WHERE `product`.id = order_detail.product_variation_ID
+        $product = custom("SELECT product.id, product_variation.image,product.name,product_variation.color,product_variation.size,unit_price,quantity
+        FROM `product`,`order_detail`,product_variation	
+        WHERE `product_variation`.id = order_detail.product_variation_ID
+        And product.id = product_variation.product_id
         AND order_id = $order_id
         ");
         $delivery = $this->delivery_model->getDetail($order_id);

@@ -91,8 +91,6 @@ class order extends Controllers
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
-        // $json = file_get_contents("php://input");
-        // $sent_vars = json_decode($json, TRUE);
         $sent_vars = $_GET;
         try {
             $status = $sent_vars['status'];

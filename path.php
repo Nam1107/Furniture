@@ -1,6 +1,8 @@
 <?php
 define('ROOT_PATH',         realpath(dirname(__FILE__)));
-define('BASE_URL',          'http://localhost/obrien');
+// define('BASE_URL',          'http://localhost/obrien');
+define('BASE_URL',          'https://furniture2022.herokuapp.com/');
+
 
 // define('DB_HOST',           'localhost');
 // define('DB_USER',           'root');

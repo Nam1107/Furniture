@@ -53,16 +53,13 @@ class middleware extends Controllers
                 foreach ($role as $key => $each) {
                     array_push($a, $each['role_name']);
                 }
-                // $_SESSION['user'] = array();
 
                 $_SESSION['user']['role'] = $a;
                 $_SESSION['user']['ID'] = $role[0]['id'];
                 $res['status'] = 1;
-                // $res['obj'] = $a;
             } else   $res['status'] = 0;
             return $res;
         } catch (Exception $e) {
-            session_destroy();
             $res['status'] = 0;
             $res['errors'] = $e->getMessage();
             return $res;
