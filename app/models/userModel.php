@@ -32,26 +32,28 @@ class userModel
         return ($res);
     }
 
-    public function getDetail($id)
+    public function getDetail($id, $value = '*', $role = 0)
     {
-        $obj = custom("SELECT `user`.id,`user`.user_name,`user`.avatar,`user`.phone
+        $obj = custom("SELECT $value
         FROM `user`
-        WHERE user.id = $id")[0];
-
-
-
-        $role = custom("SELECT role.role_name
-        FROM role,user_role
+        WHERE user.id = $id");
+        if (!$obj) return null;
+        $obj = $obj[0];
+        if ($role == 1) {
+            $role = custom("SELECT role_variation.role_name
+        FROM role_variation,user_role
         WHERE user_role.user_id = $id
-        AND role.id= user_role.role_id");
+        AND role_variation.id= user_role.role_id");
 
-        $a = array();
+            $a = array();
 
-        foreach ($role as $key => $each) {
-            array_push($a, $each['role_name']);
+            foreach ($role as $key => $each) {
+                array_push($a, $each['role_name']);
+            }
+
+            $obj['role'] = $a;
         }
 
-        $obj['role'] = $a;
 
         return $obj;
     }

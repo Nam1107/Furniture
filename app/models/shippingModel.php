@@ -9,12 +9,12 @@ class shippingModel
             "created_date" => currentTime(),
             "created_by" => $userID
         ];
-        create('shipping_detail', $shipping);
+        create('shipping_report', $shipping);
     }
     function getList($order_id)
     {
-        $shipping = custom("SELECT shipping_detail.description,shipping_detail.created_date
-        from shipping_detail
+        $shipping = custom("SELECT shipping_report.description,shipping_report.created_date
+        from shipping_report
         WHERE order_id =  $order_id
         ");
         return $shipping;

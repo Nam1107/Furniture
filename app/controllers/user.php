@@ -40,7 +40,7 @@ class User extends Controllers
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->userOnly();
         $id = $_SESSION['user']['ID'];
-        $res = $this->user_model->getDetail($id);
+        $res = $this->user_model->getDetail($id, 'id,avatar,user_name,phone');
         dd($res);
         exit();
     }
@@ -49,7 +49,7 @@ class User extends Controllers
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
-        $res = $this->user_model->getDetail($id);
+        $res = $this->user_model->getDetail($id, 'id,avatar,user_name,phone');
         dd($res);
         exit();
     }

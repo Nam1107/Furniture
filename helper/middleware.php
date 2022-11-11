@@ -55,9 +55,12 @@ class middleware extends Controllers
                 }
 
                 $_SESSION['user']['role'] = $a;
-                $_SESSION['user']['ID'] = $role[0]['id'];
+                $_SESSION['user']['id'] = $role[0]['id'];
                 $res['status'] = 1;
-            } else   $res['status'] = 0;
+            } else {
+                $res['status'] = 0;
+                $res['errors'] = 'Not found user';
+            }
             return $res;
         } catch (Exception $e) {
             $res['status'] = 0;

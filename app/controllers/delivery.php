@@ -19,7 +19,7 @@ class delivery extends Controllers
         dd($res);
         exit;
     }
-    function getUser($userID = 0)
+    function createDelivery($userID = 0)
     {
         $res = $this->user_model->getDetail($userID);
         dd($res);

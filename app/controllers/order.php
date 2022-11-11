@@ -21,7 +21,7 @@ class order extends Controllers
         $this->middle_ware->checkRequest('POST');
         $this->middle_ware->userOnly();
 
-        $userID = $_SESSION['user']['ID'];
+        $user_id = $_SESSION['user']['id'];
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
 
@@ -29,7 +29,7 @@ class order extends Controllers
         if (!isset($sent_vars['note']) || empty($sent_vars['phone']) || empty($sent_vars['address'])) {
             $this->loadErrors(400, 'Error: input is invalid');
         }
-        $cart = $this->cart_model->getCart($userID)['obj'];
+        $cart = $this->cart_model->getCart($user_id)['obj'];
         if (!$cart) {
             $this->loadErrors(400, 'Your cart is empty');
         }
@@ -42,23 +42,23 @@ class order extends Controllers
         #update sold of product
         foreach ($cart as $key => $val) {
             $quantity = $val['quantity'];
-            $productID = $val['productID'];
+            $product_id = $val['product_id'];
             custom("
-            UPDATE product SET stock = if(stock < $quantity,0, stock - $quantity), sold = if(sold IS NULL, $quantity , sold + $quantity) WHERE ID = $productID
+            UPDATE product SET stock = if(stock < $quantity,0, stock - $quantity), sold = if(sold IS NULL, $quantity , sold + $quantity) WHERE id = $product_id
             ");
         }
         #delete cart
-        $this->cart_model->delete($userID);
+        $this->cart_model->delete($user_id);
 
         #create order
-        $orderID = $this->order_model->createOrder($userID, $sent_vars['note'], $sent_vars['phone'], $sent_vars['address']);
+        $order_id = $this->order_model->createOrder($user_id, $sent_vars['note'], $sent_vars['phone'], $sent_vars['address']);
 
-        $this->shipping_model->create($orderID);
+        $this->shipping_model->create($order_id);
 
         foreach ($cart as $key => $val) {
-            $this->order_model->createOrderDetail($orderID, $val['productID'], $val['unitPrice'], $val["quantity"]);
+            $this->order_model->createOrderDetail($order_id, $val['product_id'], $val['unitPrice'], $val["quantity"]);
         }
-        $res = $this->order_model->getDetail($orderID);
+        $res = $this->order_model->getDetail($order_id);
         dd($res);
         exit();
     }
@@ -67,10 +67,7 @@ class order extends Controllers
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->userOnly();
-        $userID = $_SESSION['user']['ID'];
-
-        // $json = file_get_contents("php://input");
-        // $sent_vars = json_decode($json, TRUE);
+        $user_id = $_SESSION['user']['id'];
 
         $sent_vars = $_GET;
 
@@ -82,7 +79,7 @@ class order extends Controllers
             $this->loadErrors(400, 'Error: input is invalid');
         }
 
-        $res = $this->order_model->myListOrder($userID, $status, $page, $perPage);
+        $res = $this->order_model->myListOrder($user_id, $status, $page, $perPage);
         dd($res);
         exit();
     }
@@ -120,17 +117,17 @@ class order extends Controllers
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
-        $res = $this->order_model->getDetail($id);
+        $res = $this->order_model->getDetail($id, '*', 1, 1, 1);
         dd($res);
         exit();
     }
 
-    public function setStatusOrder($id = 0)
+    public function setStatus($id = 0)
     {
         $this->middle_ware->checkRequest('PUT');
         $this->middle_ware->adminOnly();
 
-        $order = selectOne('order', ['ID' => $id]);
+        $order = selectOne('order', ['id' => $id]);
         if (!$order) {
             $this->loadErrors(400, 'No orders yet');
         }
@@ -155,7 +152,7 @@ class order extends Controllers
         $this->middle_ware->userOnly();
 
         $status = 'Cancelled';
-        $order = selectOne('order', ['ID' => $id]);
+        $order = selectOne('order', ['id' => $id]);
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
         $reason = $sent_vars['reason'];
@@ -190,7 +187,7 @@ class order extends Controllers
         $this->middle_ware->userOnly();
 
         $status = 'To Rate';
-        $order = selectOne('order', ['ID' => $id]);
+        $order = selectOne('order', ['id' => $id]);
         if (!$order) {
             $this->loadErrors(400, 'No orders yet');
             exit();
