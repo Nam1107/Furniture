@@ -26,7 +26,7 @@ class order extends Controllers
         $sent_vars = json_decode($json, TRUE);
 
         #check...
-        if (!isset($sent_vars['note']) || empty($sent_vars['phone']) || empty($sent_vars['address'])) {
+        if (!isset($sent_vars['note']) || empty($sent_vars['address'])) {
             $this->loadErrors(400, 'Error: input is invalid');
         }
         $cart = $this->cart_model->getCart($user_id)['obj'];
@@ -51,7 +51,7 @@ class order extends Controllers
         $this->cart_model->delete($user_id);
 
         #create order
-        $order_id = $this->order_model->createOrder($user_id, $sent_vars['note'], $sent_vars['phone'], $sent_vars['address']);
+        $order_id = $this->order_model->createOrder($user_id, $sent_vars['note'],  $sent_vars['address']);
 
         $this->shipping_model->create($order_id);
 
@@ -76,7 +76,7 @@ class order extends Controllers
             $page = $sent_vars['page'];
             $perPage = $sent_vars['perPage'];
         } catch (Error $e) {
-            $this->loadErrors(400, 'Error: input is invalid');
+            $this->loadErrors(400, 'Lỗi biến đầu vào');
         }
 
         $res = $this->order_model->myListOrder($user_id, $status, $page, $perPage);
@@ -96,7 +96,7 @@ class order extends Controllers
             $page = $sent_vars['page'];
             $perPage = $sent_vars['perPage'];
         } catch (Error $e) {
-            $this->loadErrors(400, 'Error: input is invalid');
+            $this->loadErrors(400, 'Lỗi biến đầu vào');
         }
 
         $res = $this->order_model->listOrder($status, $page, $perPage, $startDate, $endDate);
@@ -129,14 +129,14 @@ class order extends Controllers
 
         $order = selectOne('order', ['id' => $id]);
         if (!$order) {
-            $this->loadErrors(400, 'No orders yet');
+            $this->loadErrors(400, 'Không tìm thấy đơn hàng');
         }
 
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
 
         if (empty($sent_vars['status']) || empty($sent_vars['description'])) {
-            $this->loadErrors(400, 'Not enough value');
+            $this->loadErrors(400, 'Lỗi biến đầu vào');
         }
 
         $this->order_model->updateStatus($id, $sent_vars['status'], $sent_vars['description']);
@@ -151,17 +151,17 @@ class order extends Controllers
         $this->middle_ware->checkRequest('PUT');
         $this->middle_ware->userOnly();
 
-        $status = 'Cancelled';
+        $status = status_order[5];
         $order = selectOne('order', ['id' => $id]);
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
         $reason = $sent_vars['reason'];
-        $reason = "Reason for Cancellation : " . $reason;
+        $reason = "Lý do hủy: " . $reason;
         if (!isset($sent_vars['reason'])) {
-            $this->loadErrors(400, 'Error: input is invalid');
+            $this->loadErrors(400, 'Lỗi biến đầu vào');
         }
         if (!$order) {
-            $this->loadErrors(400, 'No orders yet');
+            $this->loadErrors(400, 'Không tìm thấy đơn hàng');
         }
         switch ($order['status']) {
             case 'To Ship':
@@ -172,11 +172,11 @@ class order extends Controllers
                 exit();
                 break;
             case 'To Recivie':
-                $this->loadErrors(400, 'The order is being shipped');
+                $this->loadErrors(400, 'Đơn hàng đang được vận chuyển');
                 exit;
                 break;
             default:
-                $this->loadErrors(400, 'The order has been delivered');
+                $this->loadErrors(400, 'Đơn hàng đã được giao');
                 exit;
                 break;
         }
@@ -189,22 +189,22 @@ class order extends Controllers
         $status = 'To Rate';
         $order = selectOne('order', ['id' => $id]);
         if (!$order) {
-            $this->loadErrors(400, 'No orders yet');
+            $this->loadErrors(400, 'Không tìm thấy đơn hàng');
             exit();
         }
 
         switch ($order['status']) {
             case 'To Recivie':
-                $this->order_model->updateStatus($id, $status, "Confirm Receipt of an Order from a Customer");
+                $this->order_model->updateStatus($id, $status, "Người dùng xác nhận: Đã nhận được hàng");
                 $res['status'] = 1;
                 $res['msg'] = 'Success';
                 dd($res);
                 exit();
             case 'To Ship':
-                $this->loadErrors(400, 'Orders are being prepared');
+                $this->loadErrors(400, 'Đơn hàng đang chờ vận chuyển');
                 exit();
             default:
-                $this->loadErrors(400, 'The order has been completed');
+                $this->loadErrors(400, 'Đơn hàng đã hoàn thành');
                 exit();
         }
     }

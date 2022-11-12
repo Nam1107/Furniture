@@ -64,7 +64,7 @@ class userModel
         if (!$obj) {
             http_response_code(404);
             $res['status'] = 0;
-            $res['errors'] = 'Not found user by ID';
+            $res['errors'] = 'Không tìm thấy người dùng';
             return $res;
         }
         $userID['ID'] = $id;

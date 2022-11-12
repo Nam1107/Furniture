@@ -39,3 +39,19 @@ define('DB_CHARSET',          'utf8');
 define('TOKEN_ALG',          'HS512');
 define('TOKEN_SECRET',          'furnitureShop');
 define('MD5_PRIVATE_KEY',   '2342kuhskdfsd23(&kusdhfjsgJYGJGsfdf384');
+
+const status_order = [
+    0 => 'Chờ vận chuyển',
+    1 => 'Đang giao hàng',
+    2 => 'Chờ xác nhận',
+    3 => 'Chờ đánh giá',
+    4 => 'Hoàn thành',
+    5 => 'Hủy'
+];
+
+const shipping_status = [
+    0 => 'Đơn hàng đã được đặt',
+    1 => 'Đơn hàng đang được vận chuyển',
+    2 => 'Đơn hàng đẵ được giao',
+    3 => 'Người dùng xác nhận'
+];
