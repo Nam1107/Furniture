@@ -61,6 +61,11 @@ const shipping_fail = [
     1 => 'Khách hàng hẹn lấy hàng vào ngày khác'
 ];
 
+const order_fail = [
+    0 => 'Không liên lạc được với khách hàng',
+    1 => 'Hàng trong kho đã hêt'
+];
+
 const delivery_status = [
     0 => 'Đang xử lý',
     1 => 'Thành công',

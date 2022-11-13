@@ -43,13 +43,36 @@ class delivery extends Controllers
         dd($res);
         exit;
     }
-    function shipperListDelivery()
+    function listByStatus()
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->shipperOnly();
         $user_id = $_SESSION['user']['id'];
         $sent_vars = $_GET;
         try {
+            $status = $sent_vars['status'];
+            $startDate = $sent_vars['startDate'];
+            $endDate = $sent_vars['endDate'];
+            $page = $sent_vars['page'];
+            $perPage = $sent_vars['perPage'];
+        } catch (ErrorException $e) {
+            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+        }
+        $res = $this->delivery_model->getListByShipper($user_id, $status, $page, $perPage, $startDate, $endDate);
+        foreach ($res['obj'] as $key => $each) {
+            $order_id = empty($each['order_id']) ? 0 : $each['order_id'];
+            $res['obj'][$key]['order'] = $this->order_model->getDetail($order_id, '*', 0);
+            unset($res['obj'][$key]['order_id']);
+        }
+        dd($res);
+    }
+    function listByShipper()
+    {
+        $this->middle_ware->checkRequest('GET');
+        $this->middle_ware->shipperOnly();
+        $sent_vars = $_GET;
+        try {
+            $user_id = $sent_vars['userID'];
             $status = $sent_vars['status'];
             $startDate = $sent_vars['startDate'];
             $endDate = $sent_vars['endDate'];

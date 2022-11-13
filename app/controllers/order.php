@@ -68,6 +68,35 @@ class order extends Controllers
         exit();
     }
 
+    function updateOrder($order_id)
+    {
+        $this->middle_ware->checkRequest('PUT');
+        $this->middle_ware->adminOnly();
+        //     "note": "không có gì",
+        // "address": "Hà Nội",
+        $json = file_get_contents("php://input");
+        $sent_vars = json_decode($json, TRUE);
+
+        $order = $this->order_model->getDetail($order_id, '*');
+        if (!$order) {
+            $this->loadErrors(404, "Không tìm thấy đơn hàng");
+        }
+        if ($order['status'] != status_order[0]) {
+            $this->loadErrors(404, "Đơn hàng không trong trạng thái " . status_order[0]);
+        }
+        try {
+            $note = $sent_vars['note'];
+            $address = $sent_vars['address'];
+            $this->order_model->update($order_id, $note, $address);
+        } catch (ErrorException $e) {
+            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+        }
+        $res['status'] = 1;
+        $res['msg'] = 'Thành công';
+        dd($res);
+        exit;
+    }
+
 
     public function listOrder()
     {
@@ -141,65 +170,73 @@ class order extends Controllers
         exit();
     }
 
-    public function setStatus($id = 0)
+    public function cancelOrder($order_id = 0)
     {
         $this->middle_ware->checkRequest('PUT');
         $this->middle_ware->adminOnly();
 
-        $order = selectOne('order', ['id' => $id]);
-        if (!$order) {
-            $this->loadErrors(400, 'Không tìm thấy đơn hàng');
-        }
-
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
 
-        if (empty($sent_vars['status']) || empty($sent_vars['description'])) {
-            $this->loadErrors(400, 'Lỗi biến đầu vào');
+        $order = $this->order_model->getDetail($order_id);
+
+        if (!$order) {
+            $this->loadErrors(404, 'Không tìm thấy đơn hàng');
         }
 
-        $this->order_model->updateStatus($id, $sent_vars['status'], $sent_vars['description']);
+        try {
+            if ($order['status'] != status_order[0]) {
+                $this->loadErrors(404, 'Trạng thái đơn hàng không hợp lệ');
+            }
+            $description = $sent_vars['description'];
+            if (!in_array($description, order_fail)) {
+                $this->loadErrors(400, 'Lý do hủy không hợp lệ');
+            }
+            $this->order_model->cancel($order_id, $description);
+        } catch (ErrorException $e) {
+            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+        }
         $res['status'] = 1;
-        $res['msg'] = 'Success';
+        $res['msg'] = 'Thành công';
         dd($res);
-        exit();
+        exit;
     }
 
-    public function cancelOrder($id = 0)
-    {
-        $this->middle_ware->checkRequest('PUT');
-        $this->middle_ware->userOnly();
+    // public function cancelOrder($id = 0)
+    // {
+    //     $this->middle_ware->checkRequest('PUT');
+    //     $this->middle_ware->userOnly();
 
-        $status = status_order[5];
-        $order = selectOne('order', ['id' => $id]);
-        $json = file_get_contents("php://input");
-        $sent_vars = json_decode($json, TRUE);
-        $reason = $sent_vars['reason'];
-        $reason = "Lý do hủy: " . $reason;
-        if (!isset($sent_vars['reason'])) {
-            $this->loadErrors(400, 'Lỗi biến đầu vào');
-        }
-        if (!$order) {
-            $this->loadErrors(400, 'Không tìm thấy đơn hàng');
-        }
-        switch ($order['status']) {
-            case 'To Ship':
-                $this->order_model->updateStatus($id, $status, $reason);
-                $res['status'] = 1;
-                $res['msg'] = 'Success';
-                dd($res);
-                exit();
-                break;
-            case 'To Recivie':
-                $this->loadErrors(400, 'Đơn hàng đang được vận chuyển');
-                exit;
-                break;
-            default:
-                $this->loadErrors(400, 'Đơn hàng đã được giao');
-                exit;
-                break;
-        }
-    }
+    //     $status = status_order[5];
+    //     $order = selectOne('order', ['id' => $id]);
+    //     $json = file_get_contents("php://input");
+    //     $sent_vars = json_decode($json, TRUE);
+    //     $reason = $sent_vars['reason'];
+    //     $reason = "Lý do hủy: " . $reason;
+    //     if (!isset($sent_vars['reason'])) {
+    //         $this->loadErrors(400, 'Lỗi biến đầu vào');
+    //     }
+    //     if (!$order) {
+    //         $this->loadErrors(400, 'Không tìm thấy đơn hàng');
+    //     }
+    //     switch ($order['status']) {
+    //         case 'To Ship':
+    //             $this->order_model->updateStatus($id, $status, $reason);
+    //             $res['status'] = 1;
+    //             $res['msg'] = 'Success';
+    //             dd($res);
+    //             exit();
+    //             break;
+    //         case 'To Recivie':
+    //             $this->loadErrors(400, 'Đơn hàng đang được vận chuyển');
+    //             exit;
+    //             break;
+    //         default:
+    //             $this->loadErrors(400, 'Đơn hàng đã được giao');
+    //             exit;
+    //             break;
+    //     }
+    // }
     public function orderRecevied($id = 0)
     {
         $this->middle_ware->checkRequest('PUT');

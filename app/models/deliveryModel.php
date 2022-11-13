@@ -22,7 +22,7 @@ class deliveryModel extends Controllers
         return ($res);
     }
 
-    function getListByShipper($shipper_id, $status, $page, $perPage, $startDate, $endDate)
+    function getListByStatus($status, $page, $perPage, $startDate, $endDate)
     {
         $offset = $perPage * ($page - 1);
         $total = custom(
@@ -31,7 +31,6 @@ class deliveryModel extends Controllers
                 SELECT id
                 FROM `delivery_order`
                 WHERE `delivery_order`.status LIKE '%$status%'
-                AND delivery_order.shipper_id = 
                 AND `delivery_order`.departed_date > '$startDate' AND  `delivery_order`.departed_date < '$endDate'
             ) AS B
         "
@@ -43,6 +42,38 @@ class deliveryModel extends Controllers
         SELECT *
         FROM `delivery_order`
         WHERE `delivery_order`.status LIKE '%$status%'
+        AND `delivery_order`.departed_date > '$startDate' AND  `delivery_order`.departed_date < '$endDate'
+        ORDER BY `delivery_order`.departed_date DESC
+        LIMIT $perPage  OFFSET $offset 
+        ");
+
+        $res = $this->loadList($total[0]['total'], $check, $page, $order);
+
+        return $res;
+    }
+
+    function getListByShipper($shipper_id, $status, $page, $perPage, $startDate, $endDate)
+    {
+        $offset = $perPage * ($page - 1);
+        $total = custom(
+            "SELECT COUNT(id) as total
+            FROM (
+                SELECT id
+                FROM `delivery_order`
+                WHERE `delivery_order`.status LIKE '%$status%'
+                AND delivery_order.shipper_id = $shipper_id
+                AND `delivery_order`.departed_date > '$startDate' AND  `delivery_order`.departed_date < '$endDate'
+            ) AS B
+        "
+        );
+
+        $check = ceil($total[0]['total'] / $perPage);
+
+        $order = custom("
+        SELECT *
+        FROM `delivery_order`
+        WHERE `delivery_order`.status LIKE '%$status%'
+        AND delivery_order.shipper_id = $shipper_id
         AND `delivery_order`.departed_date > '$startDate' AND  `delivery_order`.departed_date < '$endDate'
         ORDER BY `delivery_order`.departed_date DESC
         LIMIT $perPage  OFFSET $offset 
