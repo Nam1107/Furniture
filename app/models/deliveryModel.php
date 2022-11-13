@@ -2,66 +2,155 @@
 
 class deliveryModel extends Controllers
 {
-    public $user_model;
-    public function __construct()
+
+    function getDetail($delivery_id, $value = '*')
     {
-        $this->user_model = $this->model('userModel');
+        $delivery = custom("
+                SELECT $value
+                FROM delivery_order
+                WHERE delivery_order.id = $delivery_id
+                ORDER BY id DESC
+        ");
+
+
+        if (empty($delivery)) {
+            return null;
+        }
+
+        $res = $delivery[0];
+
+        return ($res);
     }
-    function getDetail($order_id, $value = '*', $member = 1, $gallery = 1)
+
+    function getListByShipper($shipper_id, $status, $page, $perPage, $startDate, $endDate)
+    {
+        $offset = $perPage * ($page - 1);
+        $total = custom(
+            "SELECT COUNT(id) as total
+            FROM (
+                SELECT id
+                FROM `delivery_order`
+                WHERE `delivery_order`.status LIKE '%$status%'
+                AND delivery_order.shipper_id = 
+                AND `delivery_order`.departed_date > '$startDate' AND  `delivery_order`.departed_date < '$endDate'
+            ) AS B
+        "
+        );
+
+        $check = ceil($total[0]['total'] / $perPage);
+
+        $order = custom("
+        SELECT *
+        FROM `delivery_order`
+        WHERE `delivery_order`.status LIKE '%$status%'
+        AND `delivery_order`.departed_date > '$startDate' AND  `delivery_order`.departed_date < '$endDate'
+        ORDER BY `delivery_order`.departed_date DESC
+        LIMIT $perPage  OFFSET $offset 
+        ");
+
+        $res = $this->loadList($total[0]['total'], $check, $page, $order);
+
+        return $res;
+    }
+
+
+
+    function getListByOrder($order_id, $value = '*')
     {
         $delivery = custom("
                 SELECT $value
                 FROM delivery_order
                 WHERE delivery_order.order_id = $order_id
+                ORDER BY id DESC
         ");
+        $res = $delivery;
 
-        $leader_id = !empty($delivery[0]['shipper_leader_id']) ?  $delivery[0]['shipper_leader_id'] : 0;
-
-        $leader = $this->user_model->getDetail($leader_id, 'id,user_name,avatar,phone');
-
-        $delivery_id  = !empty($delivery[0]['id']) ?  $delivery[0]['id'] : 0;
-
-        $member = custom("
-            SELECT user.id,user.user_name,user.avatar,user.phone
-            FROM delivery_order_member,user
-            WHERE delivery_order_member.delivery_order_id = $delivery_id
-            AND user.id = delivery_order_member.shipper_member_id
-
-        ");
-        $departed_gallery = custom("
-        SELECT * from departed_gallery where delivery_order_id = $delivery_id
-        ");
-        $delivered_gallery = custom("
-        SELECT * from delivered_gallery where delivery_order_id = $delivery_id
-        ");
-        $delivery = empty($delivery) ? null : $delivery[0];
-        $member = empty($member) ? null : $member;
-        $res['detail'] = $delivery;
-        $res['leader'] = $leader;
-        $res['member'] = $member;
-        $res['gallery'] = [
-            'departed' => $departed_gallery,
-            'delivered' => $delivered_gallery
-        ];
         return ($res);
     }
 
-    function create($order_id = null, $leader_id = null, $created_by = null)
+    function create($order_id = null, $shipper_id = null)
     {
+        $user_id = $_SESSION['user']['id'];
         $sent_vars = [
             'order_id' => $order_id,
-            'shipper_leader_id' => $leader_id,
-            'created_by' => $created_by,
+            'shipper_id' => $shipper_id,
+            'created_by' => $user_id,
             'departed_date' => currentTime(),
-            'delivered_date' => null
+            'delivered_date' => null,
+            'status' => delivery_status[0],
+            'description' => null
         ];
-        create('delivery_order', $sent_vars);
+        $delivery_id = create('delivery_order', $sent_vars);
         $shipping = [
             "order_id" => $order_id,
             "description" => shipping_status[1],
             "created_date" => currentTime(),
-            "created_by" => $created_by
+            "created_by" => $user_id
         ];
         create('shipping_report', $shipping);
+        update('order', ['id' => $order_id], ['status' => status_order[1]]);
+
+        return $delivery_id;
+    }
+
+    function update($delivery_id, $shipper_id, $status, $description)
+    {
+        $user_id = $_SESSION['user']['id'];
+        $delivery = [
+            'shipper_id' => $shipper_id,
+            'created_by' => $user_id,
+            'status' => $status,
+            'departed_date' => currentTime()
+        ];
+        update('delivery_order', ['id' => $delivery_id], $delivery);
+    }
+
+    function setFail($delivery_id, $description)
+    {
+        $status = $this->getDetail($delivery_id)['status'];
+        if ($status != delivery_status[0]) {
+            $status = delivery_status[0];
+            $this->loadErrors(400, "Đơn vận không trong trạng thái '$status'");
+        }
+        $order_id = $this->getDetail($delivery_id)['order_id'];
+        $user_id = $_SESSION['user']['id'];
+        $sent_vars = [
+            'delivered_date' => null,
+            'status' => delivery_status[2],
+            'description' => $description
+        ];
+        update('delivery_order', ['id' => $delivery_id], $sent_vars);
+        $shipping = [
+            "order_id" => $order_id,
+            "description" => $description,
+            "created_date" => currentTime(),
+            "created_by" => $user_id
+        ];
+        create('shipping_report', $shipping);
+        update('order', ['id' => $order_id], ['status' => status_order[0]]);
+    }
+    function setSuccess($delivery_id, $description)
+    {
+        $status = $this->getDetail($delivery_id)['status'];
+        if ($status != delivery_status[0]) {
+            $status = delivery_status[0];
+            $this->loadErrors(400, "Đơn vận không trong trạng thái '$status'");
+        }
+        $order_id = $this->getDetail($delivery_id)['order_id'];
+        $user_id = $_SESSION['user']['id'];
+        $sent_vars = [
+            'delivered_date' => currentTime(),
+            'status' => delivery_status[1],
+            'description' => $description
+        ];
+        update('delivery_order', ['id' => $delivery_id], $sent_vars);
+        $shipping = [
+            "order_id" => $order_id,
+            "description" => $description,
+            "created_date" => currentTime(),
+            "created_by" => $user_id
+        ];
+        create('shipping_report', $shipping);
+        update('order', ['id' => $order_id], ['status' => status_order[2]]);
     }
 }

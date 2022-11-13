@@ -42,7 +42,7 @@ define('MD5_PRIVATE_KEY',   '2342kuhskdfsd23(&kusdhfjsgJYGJGsfdf384');
 
 const status_order = [
     0 => 'Chờ vận chuyển',
-    1 => 'Đang giao hàng',
+    1 => 'Chờ nhận hàng',
     2 => 'Chờ xác nhận',
     3 => 'Chờ đánh giá',
     4 => 'Hoàn thành',
@@ -52,6 +52,17 @@ const status_order = [
 const shipping_status = [
     0 => 'Đơn hàng đã được đặt',
     1 => 'Đơn hàng đang được vận chuyển',
-    2 => 'Đơn hàng đẵ được giao',
-    3 => 'Người dùng xác nhận'
+    2 => 'Đơn hàng đã được giao',
+    3 => 'Người dùng xác nhận: đã nhận được hàng'
+];
+
+const shipping_fail = [
+    0 => 'Khách hàng không nghe máy',
+    1 => 'Khách hàng hẹn lấy hàng vào ngày khác'
+];
+
+const delivery_status = [
+    0 => 'Đang xử lý',
+    1 => 'Thành công',
+    2 => 'Thất bại'
 ];

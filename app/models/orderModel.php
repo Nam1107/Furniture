@@ -2,25 +2,20 @@
 
 class orderModel extends Controllers
 {
-    public $shipping_model;
-    public $delivery_model;
-    public $user_model;
     public function __construct()
     {
-        $this->user_model = $this->model('userModel');
-        $this->shipping_model = $this->model('shippingModel');
-        $this->delivery_model = $this->model('deliveryModel');
         set_error_handler(function ($severity, $message, $file, $line) {
             throw new ErrorException($message, 0, $severity, $file, $line);
         }, E_WARNING);
     }
-    function getDetail($order_id, $value = '*', $shipping = 0, $product = 0, $delivery = 0)
+    function getDetail($order_id, $value = '*', $all = 0)
     {
 
         $order = custom("
         SELECT $value
         FROM `order`
         WHERE `order`.id = $order_id
+        ORDER BY id DESC
         ");
 
         $total = custom("
@@ -32,40 +27,21 @@ class orderModel extends Controllers
         ");
 
         if (!$order) {
-            $this->loadErrors(400, 'No orders yet');
+            return null;
+            // $this->loadErrors(404, 'Không tìm thấy đơn hàng');
         }
 
         $order = $order[0];
-        $order['total'] = $total[0]['total'];
-        $order['num_of_product'] = $total[0]['num_of_product'];
 
-        $user_id = $order['user_id'];
+        if (!empty($total)) {
+            $order['total'] = $total[0]['total'];
+            $order['num_of_product'] = $total[0]['num_of_product'];
+        } else {
+            $order['total'] = 0;
+            $order['num_of_product'] = 0;
+        }
 
-        unset($order['user_id']);
-
-        $order['user'] = $this->user_model->getDetail($user_id, 'id,avatar,user_name,phone,email');
         $res = $order;
-
-        if ($shipping == 1) {
-            $shipping = $this->shipping_model->getList($order_id);
-            $res['shipping'] = $shipping;
-        }
-
-        if ($product == 1) {
-            $product = custom("SELECT product.id, product_variation.image,product.name,product_variation.color,product_variation.size,unit_price,quantity
-            FROM `product`,`order_detail`,product_variation	
-            WHERE `product_variation`.id = order_detail.product_variation_ID
-            And product.id = product_variation.product_id
-            AND order_id = $order_id
-            ");
-            $res['product'] = $product;
-        }
-
-        if ($delivery == 1) {
-            $delivery = $this->delivery_model->getDetail($order_id);
-            $res['delivery'] = $delivery;
-        }
-
 
         return $res;
     }

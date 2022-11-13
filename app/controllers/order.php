@@ -6,13 +6,18 @@ class order extends Controllers
     public $middle_ware;
     public $order_model;
     public $delivery_model;
+    public $user_model;
     public function __construct()
     {
         $this->order_model = $this->model('orderModel');
         $this->delivery_model = $this->model('deliveryModel');
         $this->cart_model = $this->model('cartModel');
         $this->shipping_model = $this->model('shippingModel');
+        $this->user_model = $this->model('userModel');
         $this->middle_ware = new middleware();
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new ErrorException($message, 0, $severity, $file, $line);
+        }, E_WARNING);
     }
 
     public function createOrder()
@@ -63,28 +68,8 @@ class order extends Controllers
         exit();
     }
 
-    public function myListOrder()
-    {
-        $this->middle_ware->checkRequest('GET');
-        $this->middle_ware->userOnly();
-        $user_id = $_SESSION['user']['id'];
 
-        $sent_vars = $_GET;
-
-        try {
-            $status = $sent_vars['status'];
-            $page = $sent_vars['page'];
-            $perPage = $sent_vars['perPage'];
-        } catch (Error $e) {
-            $this->loadErrors(400, 'Lỗi biến đầu vào');
-        }
-
-        $res = $this->order_model->myListOrder($user_id, $status, $page, $perPage);
-        dd($res);
-        exit();
-    }
-
-    public function adminListOrder()
+    public function listOrder()
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
@@ -95,29 +80,63 @@ class order extends Controllers
             $endDate = $sent_vars['endDate'];
             $page = $sent_vars['page'];
             $perPage = $sent_vars['perPage'];
-        } catch (Error $e) {
-            $this->loadErrors(400, 'Lỗi biến đầu vào');
+        } catch (ErrorException $e) {
+            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
 
         $res = $this->order_model->listOrder($status, $page, $perPage, $startDate, $endDate);
+        foreach ($res['obj'] as $key => $each) {
+            $user_id = empty($each['user_id']) ? 0 : $each['user_id'];
+            $res['obj'][$key]['customer'] = $this->user_model->getDetail($user_id, 'id,avatar,user_name,phone,email', 0);
+            unset($res['obj'][$key]['user_id']);
+        }
         dd($res);
         exit();
     }
 
-    public function getMyOrder($id = 0)
-    {
-        $this->middle_ware->checkRequest('GET');
-        $this->middle_ware->userOnly();
-        $res = $this->order_model->getDetail($id);
-        dd($res);
-        exit();
-    }
 
-    public function adminGetOrder($id = 0)
+    public function getOrder($order_id = 0)
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
-        $res = $this->order_model->getDetail($id, '*', 1, 1, 1);
+        $res = $this->order_model->getDetail($order_id, '*', 1);
+
+        if (!$res) {
+            $this->loadErrors(404, 'Không tìm thấy đơn hàng');
+        }
+
+        $user_id = $res['user_id'];
+        unset($res['user_id']);
+        $res['customer'] = $this->user_model->getDetail($user_id, 'id,avatar,user_name,phone,email');
+
+        $shipping = $this->shipping_model->getList($order_id);
+        foreach ($shipping as $key => $each) {
+            $user_id = empty($each['created_by']) ? 0 : $each['created_by'];
+            unset($shipping[$key]['created_by']);
+            $shipping[$key]['created_by'] = $this->user_model->getDetail($user_id, 'id,avatar,user_name,phone,email', 0);
+        }
+        $res['shipping'] = $shipping;
+
+        $product = custom("SELECT product.id, product_variation.image,product.name,product_variation.color,product_variation.size,unit_price,quantity
+            FROM `product`,`order_detail`,product_variation	
+            WHERE `product_variation`.id = order_detail.product_variation_ID
+            And product.id = product_variation.product_id
+            AND order_id = $order_id
+            ");
+        $res['product'] = $product;
+
+        $delivery = $this->delivery_model->getListByOrder($order_id, '*', 1);
+        foreach ($delivery as $key => $each) {
+            $user_id = empty($each['shipper_id']) ? 0 : $each['shipper_id'];
+            unset($delivery[$key]['shipper_id']);
+            $delivery[$key]['shipper'] = $this->user_model->getDetail($user_id, 'id,avatar,user_name,phone,email', 0);
+
+            $user_id = empty($each['created_by']) ? 0 : $each['created_by'];
+            unset($delivery[$key]['created_by']);
+            $delivery[$key]['created_by'] = $this->user_model->getDetail($user_id, 'id,avatar,user_name,phone,email', 0);
+        }
+        $res['delivery'] = $delivery;
+
         dd($res);
         exit();
     }

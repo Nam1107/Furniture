@@ -28,7 +28,6 @@ class Controllers
     }
     public function loadList($totalCount, $numOfPage, $page, $obj)
     {
-        $res['status'] = 1;
         $res['totalCount'] = $totalCount;
         $res['numOfPage'] =  $numOfPage;
         $res['page'] = $page;

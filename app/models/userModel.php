@@ -3,12 +3,6 @@
 class userModel
 {
     protected $table = 'user';
-    public $middle;
-    public function __construct()
-    {
-        $this->middle = new middleware();
-    }
-
     public function getList($page, $perPage, $email, $sortBy, $sortType)
     {
         $offset = $perPage * ($page - 1);
@@ -32,14 +26,14 @@ class userModel
         return ($res);
     }
 
-    public function getDetail($id, $value = '*', $role = 0)
+    public function getDetail($id, $value = '*', $all = 0)
     {
         $obj = custom("SELECT $value
         FROM `user`
         WHERE user.id = $id");
         if (!$obj) return null;
         $obj = $obj[0];
-        if ($role == 1) {
+        if ($all == 1) {
             $role = custom("SELECT role_variation.role_name
         FROM role_variation,user_role
         WHERE user_role.user_id = $id
