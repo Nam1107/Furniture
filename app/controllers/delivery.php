@@ -43,6 +43,13 @@ class delivery extends Controllers
         dd($res);
         exit;
     }
+
+    function listStatus()
+    {
+        $this->middle_ware->checkRequest('GET');
+        dd(delivery_status);
+        exit;
+    }
     function listByStatus()
     {
         $this->middle_ware->checkRequest('GET');

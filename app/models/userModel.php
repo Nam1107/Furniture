@@ -26,6 +26,21 @@ class userModel
         return ($res);
     }
 
+    function listByRole($value)
+    {
+        $users = custom("SELECT `user_role`.user_id 
+        FROM `user_role`, `role_variation`,
+        (SELECT user_id, COUNT(user_id) AS num
+        FROM user_role
+        GROUP BY user_id) AS A
+        WHERE role_variation.role_name = '$value' 
+        AND user_role.role_id = role_variation.id
+        AND A.num = 2
+        AND user_role.user_id = A.user_id");
+
+        return $users;
+    }
+
     public function getDetail($id, $value = '*', $all = 0)
     {
         $obj = custom("SELECT $value

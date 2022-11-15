@@ -128,6 +128,21 @@ class User extends Controllers
         exit();
     }
 
+    function listShipper()
+    {
+        $this->middle_ware->checkRequest('GET');
+        $this->middle_ware->adminOnly();
+
+        $user = $this->user_model->listByRole('ROLE_SHIPPER');
+        // $user = [];
+        foreach ($user as $key => $each) {
+            $user[$key] = $this->user_model->getDetail($each['user_id'], 'id,avatar,user_name,phone');
+            unset($user[$key]['user_id']);
+        }
+        dd($user);
+        exit;
+    }
+
     public function changePassword()
     {
         $this->middle_ware->checkRequest('POST');

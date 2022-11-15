@@ -67,6 +67,19 @@ class order extends Controllers
         dd($res);
         exit();
     }
+    function listStatus()
+    {
+        $this->middle_ware->checkRequest('GET');
+        dd(status_order);
+        exit();
+    }
+
+    function orderFail()
+    {
+        $this->middle_ware->checkRequest('GET');
+        dd(order_fail);
+        exit;
+    }
 
     function updateOrder($order_id)
     {
@@ -97,6 +110,56 @@ class order extends Controllers
         exit;
     }
 
+    function report()
+    {
+        $this->middle_ware->checkRequest('GET');
+        $this->middle_ware->adminOnly();
+        $sent_vars = $_GET;
+        try {
+            $startDate = $sent_vars['startDate'];
+            $endDate = $sent_vars['endDate'];
+        } catch (ErrorException $e) {
+            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+        }
+        $report = custom("
+        SELECT A.status,SUM(A.total) AS total,COUNT(A.id) AS numOfOrder,SUM(numOfProduct) AS numOfProduct
+        FROM 
+        (SELECT `order`.id,`order`.status,`order`.created_date,SUM(unit_price*quantity) AS total,SUM(quantity) AS numOfProduct
+        FROM order_detail,`order`
+        WHERE order_id = `order`.id
+        AND `order`.created_date > '$startDate' AND  `order`.created_date < '$endDate'
+        GROUP BY order_id) AS A
+        GROUP BY A.status");
+
+        // $res = in_array(status_order[0], $report['status']);
+        $status = array_column($report, 'status');
+        // $res = $this->find(status_order[0], $status);
+
+        // $res = empty($res);
+
+        $res = array();
+
+        // $key = 1;
+
+        foreach (status_order as $key => $val) {
+            $check = $this->find(status_order[$key], $status);
+            if ($check !== null) {
+                $value['status'] = status_order[$key];
+                $value['total'] = $report[$check]['total'];
+                $value['numOfOrder'] = $report[$check]['numOfOrder'];
+                $value['numOfProduct'] = $report[$check]['numOfProduct'];
+            } else {
+                $value['status'] = status_order[$key];
+                $value['total'] = 0;
+                $value['numOfOrder'] = 0;
+                $value['numOfProduct'] = 0;
+            }
+            array_push($res, $value);
+        }
+        dd($res);
+
+        exit;
+    }
 
     public function listOrder()
     {

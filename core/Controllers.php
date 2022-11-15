@@ -34,4 +34,15 @@ class Controllers
         $res['obj'] = $obj;
         return $res;
     }
+    function find(mixed $value, array $array = [])
+    {
+        $res = null;
+        foreach ($array as $key => $a) {
+            if ($array[$key] == $value) {
+                $res = $key;
+                break;
+            }
+        }
+        return $res;
+    }
 }
