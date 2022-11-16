@@ -44,10 +44,50 @@ class delivery extends Controllers
         exit;
     }
 
+    function report($user_id = 0)
+    {
+        $this->middle_ware->checkRequest('GET');
+        $this->middle_ware->shipperOnly();
+        $sent_vars = $_GET;
+        try {
+            $startDate = $sent_vars['startDate'];
+            $endDate = $sent_vars['endDate'];
+        } catch (ErrorException $e) {
+            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+        }
+        $report = custom("SELECT status,COUNT(id) AS numOfDelivery
+        FROM delivery_order
+        WHERE delivery_order.shipper_id = $user_id 
+        AND delivery_order.departed_date > '$startDate' AND  delivery_order.departed_date < '$endDate'
+        GROUP BY delivery_order.`status`");
+
+        $status = array_column($report, 'status');
+        $res = array();
+        foreach (delivery_status as $key => $val) {
+            $check = $this->find(delivery_status[$key], $status);
+            if ($check !== null) {
+                $value['status'] = delivery_status[$key];
+                $value['numOfDelivery'] = $report[$check]['numOfDelivery'];
+            } else {
+                $value['status'] = delivery_status[$key];
+                $value['numOfDelivery'] = 0;
+            }
+            array_push($res, $value);
+        }
+        dd($res);
+        exit;
+    }
+
     function listStatus()
     {
         $this->middle_ware->checkRequest('GET');
         dd(delivery_status);
+        exit;
+    }
+    function reasonFail()
+    {
+        $this->middle_ware->checkRequest('GET');
+        dd(shipping_fail);
         exit;
     }
     function listByStatus()
