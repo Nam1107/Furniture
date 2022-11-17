@@ -56,6 +56,11 @@ const shipping_status = [
     3 => 'Người dùng xác nhận: đã nhận được hàng'
 ];
 
+const report_status = [
+    0 => 'Giao sai sản phẩm',
+    1 => 'Sản phẩm bị lỗi'
+];
+
 const shipping_fail = [
     0 => 'Khách hàng không nghe máy',
     1 => 'Khách hàng hẹn lấy hàng vào ngày khác'

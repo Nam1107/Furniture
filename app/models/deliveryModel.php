@@ -119,7 +119,7 @@ class deliveryModel extends Controllers
             "created_by" => $user_id
         ];
         create('shipping_report', $shipping);
-        update('order', ['id' => $order_id], ['status' => status_order[1]]);
+        update('tbl_order', ['id' => $order_id], ['status' => status_order[1]]);
 
         return $delivery_id;
     }
@@ -158,7 +158,7 @@ class deliveryModel extends Controllers
             "created_by" => $user_id
         ];
         create('shipping_report', $shipping);
-        update('order', ['id' => $order_id], ['status' => status_order[0]]);
+        update('tbl_order', ['id' => $order_id], ['status' => status_order[0]]);
     }
     function setSuccess($delivery_id, $description)
     {
@@ -182,6 +182,6 @@ class deliveryModel extends Controllers
             "created_by" => $user_id
         ];
         create('shipping_report', $shipping);
-        update('order', ['id' => $order_id], ['status' => status_order[2]]);
+        update('tbl_order', ['id' => $order_id], ['status' => status_order[2]]);
     }
 }

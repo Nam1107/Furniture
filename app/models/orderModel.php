@@ -13,8 +13,8 @@ class orderModel extends Controllers
 
         $order = custom("
         SELECT $value
-        FROM `order`
-        WHERE `order`.id = $order_id
+        FROM `tbl_order`
+        WHERE `tbl_order`.id = $order_id
         ORDER BY id DESC
         ");
 
@@ -51,10 +51,10 @@ class orderModel extends Controllers
         $total = custom(
             "SELECT COUNT(id) as total
             FROM (
-                SELECT `order`.id
-                FROM `order`
-                WHERE `order`.status LIKE '%$status%'
-                AND `order`.created_date > '$startDate' AND  `order`.created_date < '$endDate'
+                SELECT `tbl_order`.id
+                FROM `tbl_order`
+                WHERE `tbl_order`.status LIKE '%$status%'
+                AND `tbl_order`.created_date > '$startDate' AND  `tbl_order`.created_date < '$endDate'
             ) AS B
         "
         );
@@ -62,11 +62,11 @@ class orderModel extends Controllers
         $check = ceil($total[0]['total'] / $perPage);
 
         $order = custom("
-        SELECT `order`.id 
-        FROM `order`
-        WHERE  `order`.status LIKE '%$status%'
-        AND `order`.created_date > '$startDate' AND  `order`.created_date < '$endDate'
-        ORDER BY `order`.created_date DESC
+        SELECT `tbl_order`.id 
+        FROM `tbl_order`
+        WHERE  `tbl_order`.status LIKE '%$status%'
+        AND `tbl_order`.created_date > '$startDate' AND  `tbl_order`.created_date < '$endDate'
+        ORDER BY `tbl_order`.created_date DESC
         LIMIT $perPage  OFFSET $offset 
         ");
 
@@ -87,12 +87,12 @@ class orderModel extends Controllers
             "note" => $note,
             "address" => $address
         ];
-        update('order', ['id' => $order_id], $sent_vars);
+        update('tbl_order', ['id' => $order_id], $sent_vars);
     }
     public function updateStatus($order_id, $status, $description)
     {
         try {
-            update('order', ['id' => $order_id], ['status' => $status]);
+            update('tbl_order', ['id' => $order_id], ['status' => $status]);
             $user_id = $_SESSION['user']['id'];
             $shipping = [
                 "order_id" => $order_id,
@@ -119,6 +119,6 @@ class orderModel extends Controllers
         ];
 
         create('shipping_report', $shipping);
-        update('order', ['id' => $order_id], ['status' => status_order[5]]);
+        update('tbl_order', ['id' => $order_id], ['status' => status_order[5]]);
     }
 }

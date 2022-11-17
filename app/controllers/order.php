@@ -124,10 +124,10 @@ class order extends Controllers
         $report = custom("
         SELECT A.status,SUM(A.total) AS total,COUNT(A.id) AS numOfOrder,SUM(numOfProduct) AS numOfProduct
         FROM 
-        (SELECT `order`.id,`order`.status,`order`.created_date,SUM(unit_price*quantity) AS total,SUM(quantity) AS numOfProduct
-        FROM order_detail,`order`
-        WHERE order_id = `order`.id
-        AND `order`.created_date > '$startDate' AND  `order`.created_date < '$endDate'
+        (SELECT `tbl_order`.id,`tbl_order`.status,`tbl_order`.created_date,SUM(unit_price*quantity) AS total,SUM(quantity) AS numOfProduct
+        FROM order_detail,`tbl_order`
+        WHERE order_id = `tbl_order`.id
+        AND `tbl_order`.created_date > '$startDate' AND  `tbl_order`.created_date < '$endDate'
         GROUP BY order_id) AS A
         GROUP BY A.status");
 
@@ -306,7 +306,7 @@ class order extends Controllers
         $this->middle_ware->userOnly();
 
         $status = 'To Rate';
-        $order = selectOne('order', ['id' => $id]);
+        $order = selectOne('tbl_order', ['id' => $id]);
         if (!$order) {
             $this->loadErrors(400, 'Không tìm thấy đơn hàng');
             exit();

@@ -18,14 +18,14 @@ class review extends Controllers
         $this->middle_ware->checkRequest('POST');
         $this->middle_ware->userOnly();
 
-        $order = selectOne('order', ['ID' => $id]);
+        $order = selectOne('tbl_order', ['ID' => $id]);
         if (!$order) {
             $this->loadErrors(404, 'No orders yet');
         } elseif ($order['status'] != 'To Rate') {
             $this->loadErrors(400, 'Rating is not available');
         }
 
-        update('order', ['ID' => $id], ['status' => 'Completed']);
+        update('tbl_order', ['ID' => $id], ['status' => 'Completed']);
 
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
