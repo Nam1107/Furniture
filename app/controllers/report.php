@@ -42,6 +42,8 @@ class report extends Controllers
     }
     function deleteReport($report_id)
     {
+        $this->middle_ware->checkRequest('DELETE');
+        $this->middle_ware->adminOnly();
         $report = $this->report_model->getDetail($report_id, 1);
         if (!$report) {
             $this->loadErrors(404, 'Không tìm thấy bài cáo báo');
@@ -54,6 +56,8 @@ class report extends Controllers
     }
     function setUnchecked($report_id)
     {
+        $this->middle_ware->checkRequest('PUT');
+        $this->middle_ware->adminOnly();
         $report = $this->report_model->getDetail($report_id, 1);
         if (!$report) {
             $this->loadErrors(404, 'Không tìm thấy bài cáo báo');
