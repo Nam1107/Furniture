@@ -49,7 +49,6 @@ class report extends Controllers
             $this->loadErrors(404, 'Không tìm thấy bài cáo báo');
         }
         delete('order_report', ['id' => $report_id]);
-        $res['status'] = 1;
         $res['msg'] = 'Thành công';
         dd($res);
         exit;
@@ -63,7 +62,6 @@ class report extends Controllers
             $this->loadErrors(404, 'Không tìm thấy bài cáo báo');
         }
         update('order_report', ['id' => $report_id], ['checked' => 0]);
-        $res['status'] = 1;
         $res['msg'] = 'Thành công';
         dd($res);
         exit;

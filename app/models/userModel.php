@@ -17,7 +17,7 @@ class userModel
         ");
         $totalCount = custom("SELECT COUNT(*)  AS total_count FROM  `user`");
 
-        $res['status'] = 1;
+
         $res['total_count'] = $totalCount[0]['total_count'];
         $res['numOfPage'] = ceil($check);
         $res['page'] = $page;
@@ -72,20 +72,20 @@ class userModel
         $obj = selectOne('`user`', ['ID' => $id]);
         if (!$obj) {
             http_response_code(404);
-            $res['status'] = 0;
             $res['errors'] = 'Không tìm thấy người dùng';
-            return $res;
+            dd($res);
+            exit;
         }
         $userID['ID'] = $id;
         delete('user', $userID);
-        $res['status'] = 1;
+
         $res['msg'] = 'Success';
         return $res;
     }
     public function update($id, $sent_vars)
     {
         update('user', ['ID' => $id], $sent_vars);
-        $res['status'] = 1;
+
         $res['msg'] = 'Success';
         return $res;
     }
@@ -93,7 +93,7 @@ class userModel
     public function changePass($id, $var)
     {
         update('user', ['ID' => $id], $var);
-        $res['status'] = 1;
+
         $res['msg'] = 'Success';
         return $res;
     }

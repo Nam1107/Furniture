@@ -42,7 +42,6 @@ class review extends Controllers
         } catch (Error $e) {
             $this->loadErrors(400, 'Error: input is invalid');
         }
-        $res['status'] = 1;
         $res['msg'] = "Success";
         dd($res);
         exit();
@@ -93,7 +92,6 @@ class review extends Controllers
         $obj = $this->review_model->getDetail($id);
         $IsPublic = !$obj['IsPublic'];
         update('review', ['ID' => $id], ['IsPublic' => $IsPublic]);
-        $res['status'] = 1;
         $res['msg'] = 'Success';
         dd($res);
         exit();

@@ -17,10 +17,6 @@ class Product extends Controllers
     public function ListProduct()
     {
         $this->middle_ware->checkRequest('GET');
-        $res['status'] = 1;
-        // $json = file_get_contents("php://input");
-        // $sent_vars = json_decode($json, TRUE);
-
         $sent_vars = $_GET;
 
         try {
@@ -48,10 +44,6 @@ class Product extends Controllers
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
-        $res['status'] = 1;
-        // $json = file_get_contents("php://input");
-        // $sent_vars = json_decode($json, TRUE);
-
         $sent_vars = $_GET;
 
 

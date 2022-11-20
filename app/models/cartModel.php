@@ -26,7 +26,6 @@ class cartModel extends Controllers
         foreach ($shoppingCart as $key => $val) {
             $total = $total + $val['subTotal'];
         }
-        $res['status'] = 1;
         $res['numOfProduct'] = count($shoppingCart);
         $res['total'] = $total;
         $res['obj'] = $shoppingCart;

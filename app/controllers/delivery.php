@@ -164,8 +164,7 @@ class delivery extends Controllers
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
 
-        $res['status'] = 1;
-        $res['obj'] = 'Thành công';
+        $res['msg'] = 'Thành công';
         dd($res);
         exit;
     }
@@ -190,7 +189,6 @@ class delivery extends Controllers
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
-        $res['status'] = 1;
         $res['msg'] = 'Thành công';
         dd($res);
         exit;
@@ -208,7 +206,6 @@ class delivery extends Controllers
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
-        $res['status'] = 1;
         $res['msg'] = 'Thành công';
         dd($res);
         exit;
@@ -230,7 +227,7 @@ class delivery extends Controllers
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
-        $res['status'] = 1;
+
         $res['msg'] = 'Thành công';
         dd($res);
         exit;

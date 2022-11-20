@@ -20,10 +20,7 @@ class Auth extends Controllers
         session_destroy();
         $headers = apache_request_headers();
         if (!isset($headers['Authorization'])) {
-            $res['status'] = 0;
-            $res['error'] = 'You need a token to access';
-            dd($res);
-            exit();
+            $this->loadErrors(400, 'You need a token to access');
         }
         $data = $headers['Authorization'];
         $check = explode(" ", $data);
@@ -33,15 +30,11 @@ class Auth extends Controllers
         $count = delete('login_token', $token);
         // setcookie('token', '', time() - 7 * 24 * 60 * 60, '/');
         if ($count == 1) {
-            $res['status'] = 1;
             $res['msg'] = 'You have successfully logout';
             dd($res);
             exit();
         } else {
-            $res['status'] = 0;
-            $res['errors'] = 'Refresh token has expired. You must login again';
-            dd($res);
-            exit();
+            $this->loadErrors(400, 'Refresh token has expired. You must login again');
         }
     }
 
@@ -55,7 +48,6 @@ class Auth extends Controllers
         $sent_vars = json_decode($json, TRUE);
 
         $errors = validateLogin($sent_vars);
-        $res['status'] = 0;
         if (count($errors) === 0) {
 
             $user = selectOne('user', ['email' => $sent_vars['email']]);
@@ -86,8 +78,6 @@ class Auth extends Controllers
                 $login_token['createdAt'] = currentTime();
                 // setcookie('token', $login_token['token'], time() + 7 * 24 * 60 * 60, '/');
                 create('login_token', $login_token);
-
-                $res['status'] = 1;
                 $res['token'] = $token;
                 $res['refreshToken'] = $token;
 
@@ -97,20 +87,14 @@ class Auth extends Controllers
                 array_push($errors, 'Wrong password');
             }
         }
-
-        $res['errors'] = $errors;
-        dd($res);
-        exit();
+        $this->loadErrors(400, $errors);
     }
     public function refreshToken()
     {
         $this->middle_ware->checkRequest('GET');
         $headers = apache_request_headers();
         if (!isset($headers['Authorization'])) {
-            $res['status'] = 0;
-            $res['errors'] = 'You need a refresh token to access';
-            dd($res);
-            exit();
+            $this->loadErrors(400, 'You need a refresh token to access');
         }
         $check = $headers['Authorization'];
         $data = explode(" ", $check);
@@ -132,12 +116,10 @@ class Auth extends Controllers
                 ],
             ];
             $token = JWT::encode($payload, TOKEN_SECRET, 'HS256');
-            $res['status'] = 1;
             $res['token'] = $token;
             dd($res);
             exit();
         } else {
-            $res['status'] = 0;
             $res['error'] = 'Refresh token not invalid. You must login again';
             dd($res);
             exit();
@@ -159,7 +141,6 @@ class Auth extends Controllers
             $sent_vars['createdAt'] = currentTime();
             $sent_vars['password'] = password_hash($sent_vars['password'], PASSWORD_DEFAULT);
             $user_id = create($table, $sent_vars);
-            $res['status'] = 1;
             $res['msg'] = 'Success';
             dd($res);
             exit();

@@ -4,7 +4,7 @@ class categoryModel
 {
     function getList()
     {
-        $res['status'] = 1;
+
         $res['msg'] = 'Success';
         $obj = custom("
             SELECT * from category
@@ -19,7 +19,7 @@ class categoryModel
             'name' => $name,
             'description' => $desc,
         ];
-        $res['status'] = 1;
+
         $res['msg'] = 'Success';
         create('category', $condition);
         return ($res);

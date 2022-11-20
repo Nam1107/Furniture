@@ -60,9 +60,7 @@ class User extends Controllers
         $this->middle_ware->adminOnly();
         $table = 'user';
         if ($id == $_SESSION['user']['ID']) {
-            http_response_code(404);
-            $res['status'] = 0;
-            $res['errors'] = 'You cannot delete your account';
+            $this->loadErrors(400, 'You cannot delete your account');
         } else {
             $res = $this->user_model->delete($id);
         }
@@ -165,10 +163,7 @@ class User extends Controllers
                 dd($res);
                 exit();
             } else {
-                $res['status'] = 0;
-                $res['msg'] = $errors;
-                dd($res);
-                exit();
+                $this->loadErrors(400, $errors);
             }
         } catch (Error $e) {
             $this->loadErrors(400, 'Error: input is invalid');

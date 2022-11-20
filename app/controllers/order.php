@@ -104,7 +104,6 @@ class order extends Controllers
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
-        $res['status'] = 1;
         $res['msg'] = 'Thành công';
         dd($res);
         exit;
@@ -259,7 +258,6 @@ class order extends Controllers
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
-        $res['status'] = 1;
         $res['msg'] = 'Thành công';
         dd($res);
         exit;
@@ -285,7 +283,6 @@ class order extends Controllers
     //     switch ($order['status']) {
     //         case 'To Ship':
     //             $this->order_model->updateStatus($id, $status, $reason);
-    //             $res['status'] = 1;
     //             $res['msg'] = 'Success';
     //             dd($res);
     //             exit();
@@ -315,7 +312,6 @@ class order extends Controllers
         switch ($order['status']) {
             case 'To Recivie':
                 $this->order_model->updateStatus($id, $status, "Người dùng xác nhận: Đã nhận được hàng");
-                $res['status'] = 1;
                 $res['msg'] = 'Success';
                 dd($res);
                 exit();

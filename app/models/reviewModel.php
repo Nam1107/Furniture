@@ -43,7 +43,7 @@ class reviewModel
         LIMIT $perPage OFFSET $offset
         ");
 
-        $res['status'] = 1;
+
         $res['page'] = $page;
         $res['numOfPage'] = $check;
         $res['countOfReviews'] = $num;
@@ -71,7 +71,7 @@ class reviewModel
         LIMIT $perPage OFFSET $offset
         ");
 
-        $res['status'] = 1;
+
         $res['count'] = $total[0]['total'];
         $res['page'] = $page;
         $res['numOfPage'] = $check;
