@@ -66,35 +66,4 @@ class userModel
 
         return $obj;
     }
-
-    public function delete($id)
-    {
-        $obj = selectOne('`user`', ['ID' => $id]);
-        if (!$obj) {
-            http_response_code(404);
-            $res['errors'] = 'Không tìm thấy người dùng';
-            dd($res);
-            exit;
-        }
-        $userID['ID'] = $id;
-        delete('user', $userID);
-
-        $res['msg'] = 'Success';
-        return $res;
-    }
-    public function update($id, $sent_vars)
-    {
-        update('user', ['ID' => $id], $sent_vars);
-
-        $res['msg'] = 'Success';
-        return $res;
-    }
-
-    public function changePass($id, $var)
-    {
-        update('user', ['ID' => $id], $var);
-
-        $res['msg'] = 'Success';
-        return $res;
-    }
 }

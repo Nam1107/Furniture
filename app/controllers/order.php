@@ -20,53 +20,6 @@ class order extends Controllers
         }, E_WARNING);
     }
 
-    public function createOrder()
-    {
-        # code...
-        $this->middle_ware->checkRequest('POST');
-        $this->middle_ware->userOnly();
-
-        $user_id = $_SESSION['user']['id'];
-        $json = file_get_contents("php://input");
-        $sent_vars = json_decode($json, TRUE);
-
-        #check...
-        if (!isset($sent_vars['note']) || empty($sent_vars['address'])) {
-            $this->loadErrors(400, 'Error: input is invalid');
-        }
-        $cart = $this->cart_model->getCart($user_id)['obj'];
-        if (!$cart) {
-            $this->loadErrors(400, 'Your cart is empty');
-        }
-        foreach ($cart as $key => $val) {
-            if ($val['status'] === 0) {
-                $this->loadErrors(400, 'Some items in your cart has sold out');
-            }
-        }
-
-        #update sold of product
-        foreach ($cart as $key => $val) {
-            $quantity = $val['quantity'];
-            $product_id = $val['product_id'];
-            custom("
-            UPDATE product SET stock = if(stock < $quantity,0, stock - $quantity), sold = if(sold IS NULL, $quantity , sold + $quantity) WHERE id = $product_id
-            ");
-        }
-        #delete cart
-        $this->cart_model->delete($user_id);
-
-        #create order
-        $order_id = $this->order_model->createOrder($user_id, $sent_vars['note'],  $sent_vars['address']);
-
-        $this->shipping_model->create($order_id);
-
-        foreach ($cart as $key => $val) {
-            $this->order_model->createOrderDetail($order_id, $val['product_id'], $val['unitPrice'], $val["quantity"]);
-        }
-        $res = $this->order_model->getDetail($order_id);
-        dd($res);
-        exit();
-    }
     function listStatus()
     {
         $this->middle_ware->checkRequest('GET');
@@ -85,8 +38,6 @@ class order extends Controllers
     {
         $this->middle_ware->checkRequest('PUT');
         $this->middle_ware->adminOnly();
-        //     "note": "không có gì",
-        // "address": "Hà Nội",
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
 
@@ -100,7 +51,11 @@ class order extends Controllers
         try {
             $note = $sent_vars['note'];
             $address = $sent_vars['address'];
-            $this->order_model->update($order_id, $note, $address);
+            $input = [
+                "note" => $note,
+                "address" => $address
+            ];
+            update('tbl_order', ['id' => $order_id], $input);
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
@@ -254,73 +209,22 @@ class order extends Controllers
             if (!in_array($description, order_fail)) {
                 $this->loadErrors(400, 'Lý do hủy không hợp lệ');
             }
-            $this->order_model->cancel($order_id, $description);
+            $user_id = $_SESSION['user']['id'];
+            $description = "Admin hủy đơn hàng vì lý do: " . $description;
+            $shipping = [
+                "order_id" => $order_id,
+                "description" => $description,
+                "created_date" => currentTime(),
+                "created_by" => $user_id
+            ];
+
+            create('shipping_report', $shipping);
+            update('tbl_order', ['id' => $order_id], ['status' => status_order[5]]);
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
         $res['msg'] = 'Thành công';
         dd($res);
         exit;
-    }
-
-    // public function cancelOrder($id = 0)
-    // {
-    //     $this->middle_ware->checkRequest('PUT');
-    //     $this->middle_ware->userOnly();
-
-    //     $status = status_order[5];
-    //     $order = selectOne('order', ['id' => $id]);
-    //     $json = file_get_contents("php://input");
-    //     $sent_vars = json_decode($json, TRUE);
-    //     $reason = $sent_vars['reason'];
-    //     $reason = "Lý do hủy: " . $reason;
-    //     if (!isset($sent_vars['reason'])) {
-    //         $this->loadErrors(400, 'Lỗi biến đầu vào');
-    //     }
-    //     if (!$order) {
-    //         $this->loadErrors(400, 'Không tìm thấy đơn hàng');
-    //     }
-    //     switch ($order['status']) {
-    //         case 'To Ship':
-    //             $this->order_model->updateStatus($id, $status, $reason);
-    //             $res['msg'] = 'Success';
-    //             dd($res);
-    //             exit();
-    //             break;
-    //         case 'To Recivie':
-    //             $this->loadErrors(400, 'Đơn hàng đang được vận chuyển');
-    //             exit;
-    //             break;
-    //         default:
-    //             $this->loadErrors(400, 'Đơn hàng đã được giao');
-    //             exit;
-    //             break;
-    //     }
-    // }
-    public function orderRecevied($id = 0)
-    {
-        $this->middle_ware->checkRequest('PUT');
-        $this->middle_ware->userOnly();
-
-        $status = 'To Rate';
-        $order = selectOne('tbl_order', ['id' => $id]);
-        if (!$order) {
-            $this->loadErrors(400, 'Không tìm thấy đơn hàng');
-            exit();
-        }
-
-        switch ($order['status']) {
-            case 'To Recivie':
-                $this->order_model->updateStatus($id, $status, "Người dùng xác nhận: Đã nhận được hàng");
-                $res['msg'] = 'Success';
-                dd($res);
-                exit();
-            case 'To Ship':
-                $this->loadErrors(400, 'Đơn hàng đang chờ vận chuyển');
-                exit();
-            default:
-                $this->loadErrors(400, 'Đơn hàng đã hoàn thành');
-                exit();
-        }
     }
 }

@@ -28,7 +28,6 @@ class orderModel extends Controllers
 
         if (!$order) {
             return null;
-            // $this->loadErrors(404, 'Không tìm thấy đơn hàng');
         }
 
         $order = $order[0];
@@ -78,47 +77,5 @@ class orderModel extends Controllers
         $res = $this->loadList($total[0]['total'], $check, $page, $order);
 
         return $res;
-    }
-
-    function update($order_id, $note, $address)
-    {
-
-        $sent_vars = [
-            "note" => $note,
-            "address" => $address
-        ];
-        update('tbl_order', ['id' => $order_id], $sent_vars);
-    }
-    public function updateStatus($order_id, $status, $description)
-    {
-        try {
-            update('tbl_order', ['id' => $order_id], ['status' => $status]);
-            $user_id = $_SESSION['user']['id'];
-            $shipping = [
-                "order_id" => $order_id,
-                "description" => $description,
-                "created_date" => currentTime(),
-                "created_by" => $user_id
-            ];
-        } catch (ErrorException $e) {
-            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
-        }
-        create('shipping_report', $shipping);
-    }
-
-    function cancel($order_id, $description)
-    {
-
-        $user_id = $_SESSION['user']['id'];
-        $description = "Admin hủy đơn hàng vì lý do: " . $description;
-        $shipping = [
-            "order_id" => $order_id,
-            "description" => $description,
-            "created_date" => currentTime(),
-            "created_by" => $user_id
-        ];
-
-        create('shipping_report', $shipping);
-        update('tbl_order', ['id' => $order_id], ['status' => status_order[5]]);
     }
 }

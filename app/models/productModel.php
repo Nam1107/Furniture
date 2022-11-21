@@ -10,14 +10,14 @@ class productModel extends Controllers
         $this->middle = new middleware();
     }
 
-    public function checkProduct($id, $IsPublic)
-    {
-        $pro = selectOne('product', ['ID' => $id, 'IsPublic' => $IsPublic]);
-        if (!$pro) {
-            $this->loadErrors(404, 'Not found product');
-            exit();
-        }
-    }
+    // public function checkProduct($id, $IsPublic)
+    // {
+    //     $pro = selectOne('product', ['ID' => $id, 'IsPublic' => $IsPublic]);
+    //     if (!$pro) {
+    //         $this->loadErrors(404, 'Not found product');
+    //         exit();
+    //     }
+    // }
 
     public function getDetail($id, $IsPublic)
     {
@@ -102,51 +102,5 @@ class productModel extends Controllers
         $res['page'] = $page;
         $res['obj'] = $obj;
         return $res;
-    }
-
-    public function create($sent_vars, $gallery)
-    {
-        $sent_vars['createdAt'] = currentTime();
-        $sent_vars['updatedAt'] = currentTime();
-
-        $id = create('product', $sent_vars);
-
-        if ($id == 0) {
-            $res['status'] = 0;
-            $res['errors'] = 'Invalid Parameter';
-            return $res;
-        }
-
-        foreach ($gallery as $key => $url) :
-            $image['productID'] = $id;
-            $image['URLImage'] =  $url;
-            create('gallery', $image);
-        endforeach;
-
-
-        $res['msg'] = 'Success';
-
-        return $res;
-    }
-    public function delete($id)
-    {
-        $IsPublic = '';
-        $obj = $this->getDetail($id, $IsPublic);
-        if ($obj['status'] == 0) {
-            return ($obj);
-        };
-        delete('product', ['ID' => $id]);
-
-        $res['msg'] = 'Success';
-        return $res;
-    }
-    public function update($id, $sent_vars)
-    {
-        $sent_vars['updatedAt'] = currentTime();
-
-        $res['obj'] = update('product', ['ID' => $id], $sent_vars);
-
-        $res['msg'] = 'Success';
-        return ($res);
     }
 }
