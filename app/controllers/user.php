@@ -2,7 +2,6 @@
 
 class User extends Controllers
 {
-    public $validate_user;
     public $middle_ware;
     public $user_model;
     public function __construct()

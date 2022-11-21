@@ -2,7 +2,6 @@
 
 class order extends Controllers
 {
-    public $validate_user;
     public $middle_ware;
     public $order_model;
     public $delivery_model;
@@ -11,7 +10,6 @@ class order extends Controllers
     {
         $this->order_model = $this->model('orderModel');
         $this->delivery_model = $this->model('deliveryModel');
-        $this->cart_model = $this->model('cartModel');
         $this->shipping_model = $this->model('shippingModel');
         $this->user_model = $this->model('userModel');
         $this->middle_ware = new middleware();

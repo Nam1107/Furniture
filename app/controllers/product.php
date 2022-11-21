@@ -2,13 +2,13 @@
 
 class Product extends Controllers
 {
-    public $model_product;
+    public $product_model;
     public $middle_ware;
     public function __construct()
     {
 
         $this->middle_ware = new middleware();
-        $this->model_product = $this->model('productModel');
+        $this->product_model = $this->model('productModel');
         set_error_handler(function ($err_severity, $err_msg, $err_file, $err_line, array $err_context) {
             throw new ErrorException($err_msg, 0, $err_severity, $err_file, $err_line);
         }, E_WARNING);
@@ -35,7 +35,7 @@ class Product extends Controllers
 
         if ($name == 'price') $name = 'curPrice';
 
-        $res = $this->model_product->getList($page, $perPage, $name, $category, $IsPublic, $sale, $sortBy,  $sortType);
+        $res = $this->product_model->getList($page, $perPage, $name, $category, $IsPublic, $sale, $sortBy,  $sortType);
 
         dd($res);
         exit();
@@ -61,7 +61,7 @@ class Product extends Controllers
             $this->loadErrors(400, 'Error: input is invalid');
         }
 
-        $res = $this->model_product->getList($page, $perPage, $name, $category, $IsPublic, $sale, $sortBy,  $sortType);
+        $res = $this->product_model->getList($page, $perPage, $name, $category, $IsPublic, $sale, $sortBy,  $sortType);
 
         dd($res);
         exit();
@@ -69,7 +69,7 @@ class Product extends Controllers
     public function getProduct($id = 0)
     {
         $this->middle_ware->checkRequest('GET');
-        $res = $this->model_product->getDetail($id, '1');
+        $res = $this->product_model->getDetail($id, '1');
         dd($res);
         exit();
     }
@@ -77,7 +77,7 @@ class Product extends Controllers
     {
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
-        $res = $this->model_product->getDetail($id, '');
+        $res = $this->product_model->getDetail($id, '');
         dd($res);
         exit();
     }
