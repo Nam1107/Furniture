@@ -161,14 +161,6 @@ class order extends Controllers
         }
         $res['shipping'] = $shipping;
 
-        $product = custom("SELECT product.id, product_variation.image,product.name,product_variation.color,product_variation.size,unit_price,quantity
-            FROM `product`,`order_detail`,product_variation	
-            WHERE `product_variation`.id = order_detail.product_variation_id
-            And product.id = product_variation.product_id
-            AND order_id = $order_id
-            ");
-        $res['product'] = $product;
-
         $delivery = $this->delivery_model->getListByOrder($order_id, '*', 1);
         foreach ($delivery as $key => $each) {
             $user_id = empty($each['shipper_id']) ? 0 : $each['shipper_id'];

@@ -93,9 +93,6 @@ class middleware extends Controllers
         if (!in_array("ROLE_ADMIN", $role)) {
             $this->loadErrors(400, 'You are not admin');
         }
-        // if ($_SESSION['user']['role'] != 2) {
-        //     $this->loadErrors(400, 'You are not admin');
-        // }
     }
     function shipperOnly()
     {
@@ -104,10 +101,6 @@ class middleware extends Controllers
         if (!in_array("ROLE_SHIPPER", $role)) {
             $this->loadErrors(400, 'You are not admin');
         }
-        // $this->userOnly();
-        // if ($_SESSION['user']['role'] != 3) {
-        //     $this->loadErrors(400, 'You are not shipper');
-        // }
     }
     function guestsOnly()
     {

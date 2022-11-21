@@ -160,28 +160,28 @@ class deliveryModel extends Controllers
         create('shipping_report', $shipping);
         update('tbl_order', ['id' => $order_id], ['status' => status_order[0]]);
     }
-    function setSuccess($delivery_id, $description)
-    {
-        $status = $this->getDetail($delivery_id)['status'];
-        if ($status != delivery_status[0]) {
-            $status = delivery_status[0];
-            $this->loadErrors(400, "Đơn vận không trong trạng thái '$status'");
-        }
-        $order_id = $this->getDetail($delivery_id)['order_id'];
-        $user_id = $_SESSION['user']['id'];
-        $sent_vars = [
-            'delivered_date' => currentTime(),
-            'status' => delivery_status[1],
-            'description' => $description
-        ];
-        update('delivery_order', ['id' => $delivery_id], $sent_vars);
-        $shipping = [
-            "order_id" => $order_id,
-            "description" => $description,
-            "created_date" => currentTime(),
-            "created_by" => $user_id
-        ];
-        create('shipping_report', $shipping);
-        update('tbl_order', ['id' => $order_id], ['status' => status_order[2]]);
-    }
+    // function setSuccess($delivery_id, $description)
+    // {
+    //     $status = $this->getDetail($delivery_id)['status'];
+    //     if ($status != delivery_status[0]) {
+    //         $status = delivery_status[0];
+    //         $this->loadErrors(400, "Đơn vận không trong trạng thái '$status'");
+    //     }
+    //     $order_id = $this->getDetail($delivery_id)['order_id'];
+    //     $user_id = $_SESSION['user']['id'];
+    //     $sent_vars = [
+    //         'delivered_date' => currentTime(),
+    //         'status' => delivery_status[1],
+    //         'description' => $description
+    //     ];
+    //     update('delivery_order', ['id' => $delivery_id], $sent_vars);
+    //     $shipping = [
+    //         "order_id" => $order_id,
+    //         "description" => $description,
+    //         "created_date" => currentTime(),
+    //         "created_by" => $user_id
+    //     ];
+    //     create('shipping_report', $shipping);
+    //     update('tbl_order', ['id' => $order_id], ['status' => status_order[2]]);
+    // }
 }

@@ -34,7 +34,7 @@ class delivery extends Controllers
         unset($res['created_by']);
 
         $order_id = $res['order_id'];
-        $res['order'] = $this->order_model->getDetail($order_id, '*', 0);
+        $res['order'] = $this->order_model->getDetail($order_id, '*', 1);
         unset($res['order_id']);
 
         $customer_id = $res['order']['user_id'];
@@ -159,11 +159,11 @@ class delivery extends Controllers
             // $order_id = $sent_vars['order_id'];
             $shipper_id = $sent_vars['shipper_id'];
 
-            $this->delivery_model->create($order_id, $shipper_id);
+            $delivery_id = $this->delivery_model->create($order_id, $shipper_id);
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
-
+        $res['delivery_id'] = $delivery_id;
         $res['msg'] = 'Thành công';
         dd($res);
         exit;
@@ -176,10 +176,17 @@ class delivery extends Controllers
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
 
-        try {
+        $role = $_SESSION['user']['role'];
+        $user_id = $_SESSION['user']['id'];
+        if (!in_array("ROLE_ADMIN", $role)) {
+            $delivery = $this->delivery_model->getDetail($delivery_id);
+            if ($user_id != $delivery['shipper_id']) {
+                $this->loadErrors(400, 'Bạn không có quyền sửa đơn vận');
+            }
+        }
 
+        try {
             $shipper_id = $sent_vars['shipper_id'];
-            // $delivered_date = $sent_vars['delivered_date'];
             $status = $sent_vars['status'];
             if (!in_array($status, delivery_status)) {
                 $this->loadErrors(400, 'Trạng thái đơn vận không hợp lệ');
@@ -198,11 +205,41 @@ class delivery extends Controllers
         $this->middle_ware->checkRequest('PUT');
         $this->middle_ware->shipperOnly();
 
+        $role = $_SESSION['user']['role'];
+        $user_id = $_SESSION['user']['id'];
+        $delivery = $this->delivery_model->getDetail($delivery_id);
+        if (!in_array("ROLE_ADMIN", $role)) {
+            if ($user_id != $delivery['shipper_id']) {
+                $this->loadErrors(400, 'Bạn không có quyền sửa đơn vận');
+                exit;
+            }
+        }
+
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
         try {
             $description = $sent_vars['description'];
-            $this->delivery_model->setSuccess($delivery_id, $description);
+            // $this->delivery_model->setSuccess($delivery_id, $description);
+            $status = $delivery['status'];
+            if ($status != delivery_status[0]) {
+                $status = delivery_status[0];
+                $this->loadErrors(400, "Đơn vận không trong trạng thái '$status'");
+            }
+            $order_id = $delivery['order_id'];
+            $sent_vars = [
+                'delivered_date' => currentTime(),
+                'status' => delivery_status[1],
+                'description' => $description
+            ];
+            update('delivery_order', ['id' => $delivery_id], $sent_vars);
+            $shipping = [
+                "order_id" => $order_id,
+                "description" => $description,
+                "created_date" => currentTime(),
+                "created_by" => $user_id
+            ];
+            create('shipping_report', $shipping);
+            update('tbl_order', ['id' => $order_id], ['status' => status_order[2]]);
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
@@ -218,12 +255,42 @@ class delivery extends Controllers
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
 
+        $role = $_SESSION['user']['role'];
+        $user_id = $_SESSION['user']['id'];
+        $delivery = $this->delivery_model->getDetail($delivery_id);
+        if (!in_array("ROLE_ADMIN", $role)) {
+            if ($user_id != $delivery['shipper_id']) {
+                $this->loadErrors(400, 'Bạn không có quyền sửa đơn vận');
+            }
+        }
+
         try {
             $description = $sent_vars['description'];
             if (!in_array($description, shipping_fail)) {
                 $this->loadErrors(400, 'Lý do hủy không hợp lệ');
             }
-            $this->delivery_model->setFail($delivery_id, $description);
+            // $this->delivery_model->setFail($delivery_id, $description);
+            $status = $delivery['status'];
+            if ($status != delivery_status[0]) {
+                $status = delivery_status[0];
+                $this->loadErrors(400, "Đơn vận không trong trạng thái '$status'");
+            }
+            $order_id = $delivery['order_id'];
+            $user_id = $_SESSION['user']['id'];
+            $sent_vars = [
+                'delivered_date' => null,
+                'status' => delivery_status[2],
+                'description' => $description
+            ];
+            update('delivery_order', ['id' => $delivery_id], $sent_vars);
+            $shipping = [
+                "order_id" => $order_id,
+                "description" => $description,
+                "created_date" => currentTime(),
+                "created_by" => $user_id
+            ];
+            create('shipping_report', $shipping);
+            update('tbl_order', ['id' => $order_id], ['status' => status_order[0]]);
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }

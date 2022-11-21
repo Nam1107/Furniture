@@ -40,6 +40,14 @@ class orderModel extends Controllers
             $order['num_of_product'] = 0;
         }
 
+        $product = custom("SELECT product.id, product_variation.image,product.name,product_variation.color,product_variation.size,unit_price,quantity
+            FROM `product`,`order_detail`,product_variation	
+            WHERE `product_variation`.id = order_detail.product_variation_id
+            And product.id = product_variation.product_id
+            AND order_id = $order_id
+            ");
+        $order['product'] = $product;
+
         $res = $order;
 
         return $res;
