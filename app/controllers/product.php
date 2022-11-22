@@ -9,8 +9,8 @@ class Product extends Controllers
 
         $this->middle_ware = new middleware();
         $this->product_model = $this->model('productModel');
-        set_error_handler(function ($err_severity, $err_msg, $err_file, $err_line, array $err_context) {
-            throw new ErrorException($err_msg, 0, $err_severity, $err_file, $err_line);
+        set_error_handler(function ($severity, $message, $file, $line) {
+            throw new ErrorException($message, 0, $severity, $file, $line);
         }, E_WARNING);
     }
 

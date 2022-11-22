@@ -10,56 +10,74 @@ class productModel extends Controllers
         $this->middle = new middleware();
     }
 
-    // public function checkProduct($id, $IsPublic)
-    // {
-    //     $pro = selectOne('product', ['ID' => $id, 'IsPublic' => $IsPublic]);
-    //     if (!$pro) {
-    //         $this->loadErrors(404, 'Not found product');
-    //         exit();
-    //     }
-    // }
-
     public function getDetail($id, $IsPublic)
     {
         $userID = 0;
         $obj = $this->middle->authenToken();
         if ($obj['status'] == 1) {
-            $userID = $_SESSION['user']['ID'];
+            $userID = $_SESSION['user']['id'];
         }
 
         $obj = custom("
-            SELECT A.* , category.name AS category
-            FROM (SELECT *, IF(startSale<NOW() && endSale>NOW(), '1', '0') AS statusSale
-            FROM product) AS A,category
-            WHERE A.categoryID = category.ID
-            AND A.IsPublic like '%$IsPublic%'
-            AND A.ID = $id
+            SELECT *
+            FROM `product`
+            WHERE product.id = $id
+            AND is_public = 1
         
         ");
         if (empty($obj)) {
-            $res['status'] = 0;
-            $res['errors'] = "Not found product with ID = $id";
-            return ($res);
+            return null;
+        } else {
+            $obj = $obj[0];
         }
+        $categoryID = $obj['category_id'];
+        unset($obj['category_id']);
+        $check = custom("SELECT * FROM category WHERE id = $categoryID");
+        if (empty($check)) {
+            $obj['category'] = $check[0]['name'];
+        }
+        $gallery = selectAll('gallery', ['product_id' => $id]);
+
+        $obj['gallery'] = $gallery;
+        $obj['color'] = custom("SELECT color,image
+        FROM product_variation
+        WHERE product_id = $id
+        GROUP BY color
+        ");
+
+        $size = custom("SELECT size
+        FROM product_variation
+        WHERE product_id = $id
+        GROUP BY size
+        ");
+
+        $a = array();
+        if ($size) {
+            $a = array_column($size, 'size');;
+        }
+        $obj['sỉze'] = $a;
+
+        $obj['stock'] = custom("SELECT color,size,sum(stock) AS stock
+        FROM product_variation
+        WHERE product_id = $id
+        GROUP BY color,size
+        ");
 
         $wish = custom("
         SELECT *
-            FROM wishList
-            WHERE userID = $userID
-            AND productID = $id
+            FROM wish_list
+            WHERE user_id = $userID
+            AND product_id = $id
         ");
 
         if (!$wish) {
-            $obj[0]['wishList'] = 0;
-        } else $obj[0]['wishList'] = 1;
+            $obj['wish_list'] = 0;
+        } else $obj['wish_list'] = 1;
 
 
-        $gallery = selectAll('gallery', ['productID' => $id]);
 
-        $obj[0]['gallery'] = $gallery;
-        $res['obj'] = $obj[0];
 
-        return ($res);
+        return ($obj);
     }
 
     public function getList($page, $perPage, $name, $category, $IsPublic, $sale, $sortBy, $sortType)

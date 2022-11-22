@@ -50,9 +50,9 @@ class middleware extends Controllers
 
             $a = array();
             if ($role) {
-                foreach ($role as $key => $each) {
-                    array_push($a, $each['role_name']);
-                }
+
+
+                $a = array_column($role, 'role_name');
 
                 $_SESSION['user']['role'] = $a;
                 $_SESSION['user']['id'] = $role[0]['id'];
