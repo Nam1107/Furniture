@@ -55,7 +55,7 @@ class productModel extends Controllers
         if ($size) {
             $a = array_column($size, 'size');;
         }
-        $obj['sỉze'] = $a;
+        $obj['size'] = $a;
 
         $obj['stock'] = custom("SELECT id,color,size,sub_price,sum(stock) AS stock
         FROM product_variation
