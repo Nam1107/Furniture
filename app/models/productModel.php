@@ -57,7 +57,7 @@ class productModel extends Controllers
         }
         $obj['sỉze'] = $a;
 
-        $obj['stock'] = custom("SELECT id,color,size,sum(stock) AS stock
+        $obj['stock'] = custom("SELECT id,color,size,sub_price,sum(stock) AS stock
         FROM product_variation
         WHERE product_id = $id
         GROUP BY color,size

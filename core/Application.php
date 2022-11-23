@@ -41,17 +41,4 @@ class Application extends Controllers
         $this->prarams = array_values($arr);
         call_user_func_array([$this->controller, $this->action], $this->prarams);
     }
-
-    // public function UrlProcess()
-    // {
-    //     //getURL
-    //     $str = explode('?', $_SERVER['REQUEST_URI']);
-    //     $strLower = strtolower($str[0]);
-    //     $url = str_replace('/php/furniture', '', $strLower);
-
-    //     //change URL to array
-    //     $urlArr = array_filter(explode('/', $url));
-    //     $urlArr = array_values($urlArr);
-    //     return $urlArr;
-    // }
 }
