@@ -6,6 +6,7 @@ class orderController extends Controllers
     public $order_model;
     public $delivery_model;
     public $user_model;
+    public $shipping_model;
     public function __construct()
     {
         $this->order_model = $this->model('orderModel');
@@ -201,15 +202,9 @@ class orderController extends Controllers
             }
             $user_id = $_SESSION['user']['id'];
             $description = "Admin hủy đơn hàng vì lý do: " . $description;
-            $shipping = [
-                "order_id" => $order_id,
-                "description" => $description,
-                "created_date" => currentTime(),
-                "created_by" => $user_id
-            ];
 
-            create('shipping_report', $shipping);
-            update('tbl_order', ['id' => $order_id], ['status' => status_order[5]]);
+            $this->shipping_model->create($order_id, $user_id, $description);
+            $this->order_model->updateStatus($order_id, status_order[5]);
         } catch (ErrorException $e) {
             $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }

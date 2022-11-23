@@ -77,7 +77,6 @@ class orderModel extends Controllers
         LIMIT $perPage  OFFSET $offset 
         ");
 
-
         foreach ($order as $key => $obj) {
             $order[$key] = $this->getDetail($obj['id'], '*');
         }
@@ -85,5 +84,9 @@ class orderModel extends Controllers
         $res = $this->loadList($total[0]['total'], $check, $page, $order);
 
         return $res;
+    }
+    function updateStatus($order_id, $status)
+    {
+        update('tbl_order', ['id' => $order_id], ['status' => $status]);
     }
 }

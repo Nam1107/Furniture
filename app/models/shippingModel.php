@@ -1,11 +1,11 @@
 <?php
 class shippingModel extends Controllers
 {
-    function create($order_id, $userID = 0)
+    function create($order_id, $userID = 0, $description = '')
     {
         $shipping = [
             "order_id" => $order_id,
-            "description" => "Order has been created",
+            "description" => $description,
             "created_date" => currentTime(),
             "created_by" => $userID
         ];
