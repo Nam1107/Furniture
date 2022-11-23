@@ -47,8 +47,11 @@ class deliveryModel extends Controllers
         LIMIT $perPage  OFFSET $offset 
         ");
 
-        $res = $this->loadList($total[0]['total'], $check, $page, $order);
 
+        $res['totalCount'] = $total[0]['total'];
+        $res['numOfPage'] =  $check;
+        $res['page'] = $page;
+        $res['obj'] = $order;
         return $res;
     }
 
@@ -79,8 +82,10 @@ class deliveryModel extends Controllers
         LIMIT $perPage  OFFSET $offset 
         ");
 
-        $res = $this->loadList($total[0]['total'], $check, $page, $order);
-
+        $res['totalCount'] = $total[0]['total'];
+        $res['numOfPage'] =  $check;
+        $res['page'] = $page;
+        $res['obj'] = $order;
         return $res;
     }
 

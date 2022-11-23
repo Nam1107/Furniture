@@ -4,11 +4,13 @@ class ProductController extends Controllers
 {
     public $product_model;
     public $middle_ware;
+    public $render_view;
     public function __construct()
     {
 
         $this->middle_ware = new middleware();
         $this->product_model = $this->model('productModel');
+        $this->render_view = $this->render('renderView');
         set_error_handler(function ($severity, $message, $file, $line) {
             throw new ErrorException($message, 0, $severity, $file, $line);
         }, E_WARNING);
@@ -28,7 +30,7 @@ class ProductController extends Controllers
             $sortType = $sent_vars['sortType'];
             $name = $sent_vars['name'];
         } catch (Error $e) {
-            $this->loadErrors(400, 'Error: input is invalid');
+            $this->render_view->loadErrors(400, 'Error: input is invalid');
         }
 
         $IsPublic = 1;
@@ -37,7 +39,7 @@ class ProductController extends Controllers
 
         $res = $this->product_model->getList($page, $perPage, $name, $category, $IsPublic, $sale, $sortBy,  $sortType);
 
-        dd($res);
+        $this->render_view->ToView($res);
         exit();
     }
     public function AdminListProduct()
@@ -58,19 +60,19 @@ class ProductController extends Controllers
             if ($name == 'price') $name = 'curPrice';
             $IsPublic = '';
         } catch (Error) {
-            $this->loadErrors(400, 'Error: input is invalid');
+            $this->render_view->loadErrors(400, 'Error: input is invalid');
         }
 
         $res = $this->product_model->getList($page, $perPage, $name, $category, $IsPublic, $sale, $sortBy,  $sortType);
 
-        dd($res);
+        $this->render_view->ToView($res);
         exit();
     }
     public function getProduct($id = 0)
     {
         $this->middle_ware->checkRequest('GET');
         $res = $this->product_model->getDetail($id, '1');
-        dd($res);
+        $this->render_view->ToView($res);
         exit();
     }
     public function AdminGetProduct($id = 0)
@@ -78,7 +80,7 @@ class ProductController extends Controllers
         $this->middle_ware->checkRequest('GET');
         $this->middle_ware->adminOnly();
         $res = $this->product_model->getDetail($id, '');
-        dd($res);
+        $this->render_view->ToView($res);
         exit();
     }
 }

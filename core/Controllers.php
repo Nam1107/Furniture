@@ -12,6 +12,17 @@ class Controllers
         }
         return false;
     }
+    public function render($view)
+    {
+        if (file_exists("./app/views/" . $view . ".php")) {
+            require_once "./app/views/" . $view . ".php";
+            if (class_exists($view)) {
+                $view = new $view();
+                return $view;
+            }
+        }
+        return false;
+    }
     public function loadErrors($code, $errors)
     {
         http_response_code($code);
@@ -20,20 +31,7 @@ class Controllers
         dd($res);
         exit();
     }
-    public function loadDetail($obj)
-    {
-        $res['status'] = 1;
-        $res['obj'] = $obj;
-        return $res;
-    }
-    public function loadList($totalCount, $numOfPage, $page, $obj)
-    {
-        $res['totalCount'] = $totalCount;
-        $res['numOfPage'] =  $numOfPage;
-        $res['page'] = $page;
-        $res['obj'] = $obj;
-        return $res;
-    }
+
     function find(mixed $value, array $array = [])
     {
         $res = null;

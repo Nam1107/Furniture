@@ -80,8 +80,10 @@ class orderModel extends Controllers
         foreach ($order as $key => $obj) {
             $order[$key] = $this->getDetail($obj['id'], '*');
         }
-
-        $res = $this->loadList($total[0]['total'], $check, $page, $order);
+        $res['totalCount'] = $total[0]['total'];
+        $res['numOfPage'] =  $check;
+        $res['page'] = $page;
+        $res['obj'] = $order;
 
         return $res;
     }

@@ -7,12 +7,15 @@ class orderController extends Controllers
     public $delivery_model;
     public $user_model;
     public $shipping_model;
+
+    public $render_view;
     public function __construct()
     {
         $this->order_model = $this->model('orderModel');
         $this->delivery_model = $this->model('deliveryModel');
         $this->shipping_model = $this->model('shippingModel');
         $this->user_model = $this->model('userModel');
+        $this->render_view = $this->render('renderView');
         $this->middle_ware = new middleware();
         set_error_handler(function ($severity, $message, $file, $line) {
             throw new ErrorException($message, 0, $severity, $file, $line);
@@ -22,14 +25,14 @@ class orderController extends Controllers
     function listStatus()
     {
         $this->middle_ware->checkRequest('GET');
-        dd(status_order);
+        $this->render_view->ToView(status_order);
         exit();
     }
 
     function orderFail()
     {
         $this->middle_ware->checkRequest('GET');
-        dd(order_fail);
+        $this->render_view->ToView(order_fail);
         exit;
     }
 
@@ -42,10 +45,10 @@ class orderController extends Controllers
 
         $order = $this->order_model->getDetail($order_id, '*');
         if (!$order) {
-            $this->loadErrors(404, "Không tìm thấy đơn hàng");
+            $this->render_view->loadErrors(404, "Không tìm thấy đơn hàng");
         }
         if ($order['status'] != status_order[0]) {
-            $this->loadErrors(404, "Đơn hàng không trong trạng thái " . status_order[0]);
+            $this->render_view->loadErrors(404, "Đơn hàng không trong trạng thái " . status_order[0]);
         }
         try {
             $note = $sent_vars['note'];
@@ -56,10 +59,10 @@ class orderController extends Controllers
             ];
             update('tbl_order', ['id' => $order_id], $input);
         } catch (ErrorException $e) {
-            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+            $this->render_view->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
         $res['msg'] = 'Thành công';
-        dd($res);
+        $this->render_view->ToView($res);
         exit;
     }
 
@@ -72,7 +75,7 @@ class orderController extends Controllers
             $startDate = $sent_vars['startDate'];
             $endDate = $sent_vars['endDate'];
         } catch (ErrorException $e) {
-            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+            $this->render_view->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
         $report = custom("
         SELECT A.status,SUM(A.total) AS total,COUNT(A.id) AS numOfOrder,SUM(numOfProduct) AS numOfProduct
@@ -109,7 +112,7 @@ class orderController extends Controllers
             }
             array_push($res, $value);
         }
-        dd($res);
+        $this->render_view->ToView($res);
 
         exit;
     }
@@ -126,7 +129,7 @@ class orderController extends Controllers
             $page = $sent_vars['page'];
             $perPage = $sent_vars['perPage'];
         } catch (ErrorException $e) {
-            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+            $this->render_view->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
 
         $res = $this->order_model->listOrder($status, $page, $perPage, $startDate, $endDate);
@@ -135,7 +138,7 @@ class orderController extends Controllers
             $res['obj'][$key]['customer'] = $this->user_model->getDetail($user_id, 'id,avatar,user_name,phone,email', 0);
             unset($res['obj'][$key]['user_id']);
         }
-        dd($res);
+        $this->render_view->ToView($res);
         exit();
     }
 
@@ -147,7 +150,7 @@ class orderController extends Controllers
         $res = $this->order_model->getDetail($order_id, '*', 1);
 
         if (!$res) {
-            $this->loadErrors(404, 'Không tìm thấy đơn hàng');
+            $this->render_view->loadErrors(404, 'Không tìm thấy đơn hàng');
         }
 
         $user_id = $res['user_id'];
@@ -174,7 +177,7 @@ class orderController extends Controllers
         }
         $res['delivery'] = $delivery;
 
-        dd($res);
+        $this->render_view->ToView($res);
         exit();
     }
 
@@ -189,16 +192,16 @@ class orderController extends Controllers
         $order = $this->order_model->getDetail($order_id);
 
         if (!$order) {
-            $this->loadErrors(404, 'Không tìm thấy đơn hàng');
+            $this->render_view->loadErrors(404, 'Không tìm thấy đơn hàng');
         }
 
         try {
             if ($order['status'] != status_order[0]) {
-                $this->loadErrors(404, 'Trạng thái đơn hàng không hợp lệ');
+                $this->render_view->loadErrors(404, 'Trạng thái đơn hàng không hợp lệ');
             }
             $description = $sent_vars['description'];
             if (!in_array($description, order_fail)) {
-                $this->loadErrors(400, 'Lý do hủy không hợp lệ');
+                $this->render_view->loadErrors(400, 'Lý do hủy không hợp lệ');
             }
             $user_id = $_SESSION['user']['id'];
             $description = "Admin hủy đơn hàng vì lý do: " . $description;
@@ -206,10 +209,10 @@ class orderController extends Controllers
             $this->shipping_model->create($order_id, $user_id, $description);
             $this->order_model->updateStatus($order_id, status_order[5]);
         } catch (ErrorException $e) {
-            $this->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+            $this->render_view->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
         $res['msg'] = 'Thành công';
-        dd($res);
+        $this->render_view->ToView($res);
         exit;
     }
 }
