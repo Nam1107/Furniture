@@ -1,6 +1,6 @@
 <?php
 
-class report extends Controllers
+class reportController extends Controllers
 {
     public $middle_ware;
     public $order_model;

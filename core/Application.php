@@ -5,10 +5,11 @@ class Application extends Controllers
     private $controller;
     private $action;
     private $prarams;
+    private $routes;
 
     public function __construct()
     {
-        global $router;
+        $this->routes = new Routes();
         $this->controller = '';
         $this->action = '';
         $this->prarams = [];
@@ -17,10 +18,7 @@ class Application extends Controllers
 
     public function handleUrl()
     {
-        $arr = $this->UrlProcess();
-        if (empty($arr[0])) {
-            $this->loadErrors(404, "Not enough paramester");
-        }
+        $arr = $this->routes->UrlProcess();
 
         if (file_exists("./app/controllers/" . $arr[0] . ".php")) {
             $this->controller = $arr[0];
@@ -44,16 +42,16 @@ class Application extends Controllers
         call_user_func_array([$this->controller, $this->action], $this->prarams);
     }
 
-    public function UrlProcess()
-    {
-        //getURL
-        $str = explode('?', $_SERVER['REQUEST_URI']);
-        $strLower = strtolower($str[0]);
-        $url = str_replace('/php/furniture', '', $strLower);
+    // public function UrlProcess()
+    // {
+    //     //getURL
+    //     $str = explode('?', $_SERVER['REQUEST_URI']);
+    //     $strLower = strtolower($str[0]);
+    //     $url = str_replace('/php/furniture', '', $strLower);
 
-        //change URL to array
-        $urlArr = array_filter(explode('/', $url));
-        $urlArr = array_values($urlArr);
-        return $urlArr;
-    }
+    //     //change URL to array
+    //     $urlArr = array_filter(explode('/', $url));
+    //     $urlArr = array_values($urlArr);
+    //     return $urlArr;
+    // }
 }

@@ -1,6 +1,6 @@
 <?php
 
-class order extends Controllers
+class orderController extends Controllers
 {
     public $middle_ware;
     public $order_model;

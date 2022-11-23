@@ -1,6 +1,6 @@
 <?php
 
-class Product extends Controllers
+class ProductController extends Controllers
 {
     public $product_model;
     public $middle_ware;

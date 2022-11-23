@@ -1,6 +1,6 @@
 <?php
 
-class User extends Controllers
+class UserController extends Controllers
 {
     public $middle_ware;
     public $user_model;

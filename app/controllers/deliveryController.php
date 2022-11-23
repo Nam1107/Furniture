@@ -1,6 +1,6 @@
 <?php
 
-class delivery extends Controllers
+class deliveryController extends Controllers
 {
     public $delivery_model;
     public $user_model;

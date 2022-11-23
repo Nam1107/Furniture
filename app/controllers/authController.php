@@ -3,7 +3,7 @@ require_once './src/JWT.php';
 
 use Firebase\JWT\JWT;
 
-class Auth extends Controllers
+class AuthController extends Controllers
 {
     public $validate_user;
     public $middle_ware;
