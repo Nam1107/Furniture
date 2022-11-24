@@ -109,7 +109,7 @@ class deliveryController extends Controllers
         } catch (ErrorException $e) {
             $this->render_view->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
         }
-        $res = $this->delivery_model->getListByShipper($user_id, $status, $page, $perPage, $startDate, $endDate);
+        $res = $this->delivery_model->getListByStatus($status, $page, $perPage, $startDate, $endDate);
         foreach ($res['obj'] as $key => $each) {
             $order_id = empty($each['order_id']) ? 0 : $each['order_id'];
             $res['obj'][$key]['order'] = $this->order_model->getDetail($order_id, '*', 0);
