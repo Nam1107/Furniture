@@ -11,7 +11,7 @@ class renderView
         http_response_code($code);
         $res['status'] = 0;
         $res['errors'] = $errors;
-        dd($res);
+        echo $res;
         exit();
     }
 }

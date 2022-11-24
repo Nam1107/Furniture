@@ -6,8 +6,12 @@ try {
    // set the PDO error mode to exception
    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-   echo "Connection failed: " . $e->getMessage();
-   exit;
+
+   http_response_code(400);
+   $res['status'] = 0;
+   $res['errors'] = $e->getMessage();
+   echo $res;
+   exit();
 }
 
 // $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_TABLE);
