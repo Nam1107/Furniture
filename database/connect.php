@@ -10,7 +10,7 @@ try {
    http_response_code(400);
    $res['status'] = 0;
    $res['errors'] = $e->getMessage();
-   echo $res;
+   echo json_encode($res);
    exit();
 }
 
