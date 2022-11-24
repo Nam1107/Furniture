@@ -36,7 +36,7 @@ class productModel extends Controllers
         if (empty($check)) {
             $obj['category'] = $check[0]['name'];
         }
-        $gallery = selectAll('gallery', ['product_id' => $id]);
+        $gallery = selectAll('product_gallery', ['product_id' => $id]);
 
         $obj['gallery'] = $gallery;
         $obj['color'] = custom("SELECT color,image
