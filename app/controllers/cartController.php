@@ -79,27 +79,60 @@ class cartController extends Controllers
         exit();
     }
 
-    public function removeProduct($id = 0)
+    public function removeFromCart($id = 0)
     {
         $this->middle_ware->checkRequest('DELETE');
         $this->middle_ware->userOnly();
-        $userID = $_SESSION['user']['ID'];
-        $product = $this->product_model->getDetail($id, 1);
+        $userID = $_SESSION['user']['id'];
+        $product = $this->cart_model->checkProduct($id, 1);
         if (!$product) {
-            $this->loadErrors(404, 'Not found product');
+            $this->loadErrors(404, 'Không tìm thấy sản phẩm');
         }
-        $obj = $this->cart_model->getProductInCart($userID, $id);
+        $obj = $this->cart_model->getProductInCart($id);
         if (!$obj) {
-            $this->loadErrors(400, 'Cannot found product in your cart');
+            $this->loadErrors(400, 'Không tìm thấy sản phẩm trong giỏ hàng');
         }
 
-        $table = 'shoppingCart';
+        $table = 'shopping_cart';
         $condition = [
-            'userID' => $userID,
-            'productID' => $id,
+            'user_id' => $userID,
+            'product_variation_id' => $id,
         ];
         delete($table, $condition);
-        $res = $this->cart_model->getCart($userID);
+        $res['msg'] = 'Thành công';
+        dd($res);
+        exit();
+    }
+
+    public function updateCart()
+    {
+        $this->middle_ware->checkRequest('PUT');
+        $this->middle_ware->userOnly();
+
+        $json = file_get_contents("php://input");
+        $sent_vars = json_decode($json, TRUE);
+
+        if (empty($sent_vars['quantity']) || empty($sent_vars['product_variation_id'])) {
+            $this->loadErrors(400, 'Không đủ trường dữ liệu');
+        }
+        $id = $sent_vars['product_variation_id'];
+        $table = 'shopping_cart';
+        $product = $this->cart_model->checkProduct($id, 1);
+        if (!$product) {
+            $this->loadErrors(404, 'Không tìm thấy sản phẩm');
+        }
+        $obj = $this->cart_model->getProductInCart($id);
+        if (!$obj) {
+            $this->loadErrors(400, 'Không tìm thấy sản phẩm trong giỏ hàng');
+        }
+        if ($obj['quantity'] > 5) {
+            $this->loadErrors(400, 'Bạn không thể thêm quá 6 sản phẩm này vào giỏ hàng');
+        }
+
+        $quantity = $sent_vars['quantity'];
+
+        update($table, ['id' => $obj['id']], ['quantity' => $quantity]);
+        $res['msg'] = 'Thành công';
         dd($res);
         exit();
     }
@@ -109,7 +142,7 @@ class cartController extends Controllers
         $this->middle_ware->checkRequest('PUT');
         $this->middle_ware->userOnly();
         $userID = $_SESSION['user']['ID'];
-        $obj = $this->cart_model->getProductInCart($userID, $id);
+        $obj = $this->cart_model->getProductInCart($id);
         if (!$obj) {
             $this->loadErrors(400, 'Cannot found product in your cart');
         }
@@ -130,7 +163,7 @@ class cartController extends Controllers
         $this->middle_ware->userOnly();
         $table = 'shoppingCart';
         $userID = $_SESSION['user']['ID'];
-        $obj = $this->cart_model->getProductInCart($userID, $id);
+        $obj = $this->cart_model->getProductInCart($id);
         if (!$obj) {
             $this->loadErrors(400, 'Cannot found product in your cart');
         }
