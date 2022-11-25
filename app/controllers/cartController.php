@@ -16,6 +16,8 @@ class cartController extends Controllers
         $obj = $this->middle_ware->authenToken();
         if ($obj['status'] == 1) {
             $res = $this->cart_model->getCart();
+            dd($res);
+            exit();
         }
         $res['numOfProduct'] = 0;
         $res['totalCart'] = 0;
