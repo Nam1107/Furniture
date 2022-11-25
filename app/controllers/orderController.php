@@ -7,6 +7,7 @@ class orderController extends Controllers
     public $delivery_model;
     public $user_model;
     public $shipping_model;
+    public $cart_model;
 
     public $render_view;
     public function __construct()
@@ -16,10 +17,85 @@ class orderController extends Controllers
         $this->shipping_model = $this->model('shippingModel');
         $this->user_model = $this->model('userModel');
         $this->render_view = $this->render('renderView');
+        $this->cart_model = $this->model('cartModel');
         $this->middle_ware = new middleware();
         set_error_handler(function ($severity, $message, $file, $line) {
             throw new ErrorException($message, 0, $severity, $file, $line);
         }, E_WARNING);
+    }
+
+    public function createNewOrder($user_id, $note,  $payment_type, $address)
+    {
+        $order['user_id'] = $user_id;
+        $order['note'] = $note;
+        $order['status'] = status_order[0];
+        $order['address'] = $address;
+        $order['payment_type'] = $payment_type;
+        $order['created_date'] = currentTime();
+
+        $order_id = create('tbl_order', $order);
+        return $order_id;
+    }
+    public function createOrderDetail($order_id, $product_variation_id, $unit_price, $quantity)
+    {
+        $condition = [
+            "order_id" => $order_id,
+            "product_variation_id" => $product_variation_id,
+            "unit_price" => $unit_price,
+            "quantity" => $quantity
+        ];
+        create('order_detail', $condition);
+    }
+    public function createOrder()
+    {
+        # code...
+        $this->middle_ware->checkRequest('POST');
+        $this->middle_ware->userOnly();
+
+        $user_id = $_SESSION['user']['id'];
+        $json = file_get_contents("php://input");
+        $sent_vars = json_decode($json, TRUE);
+        try {
+            $cart = $this->cart_model->getCart($user_id)['obj'];
+            if (!$cart) {
+                $this->loadErrors(400, 'Giỏ hàng của ban bị trống');
+            }
+            foreach ($cart as $key => $val) {
+                if ($val['canBuy'] == 0) {
+                    $this->loadErrors(400, 'Một số sản phẩm trong giỏ hàng đã hết');
+                }
+            }
+
+
+            $note = $sent_vars['note'];
+            $payment_type = $sent_vars['payment_type'];
+            $address = $sent_vars['address'];
+
+
+            $order_id = $this->createNewOrder($user_id, $note,  $payment_type, $address);
+
+
+
+            #update sold of product
+            foreach ($cart as $key => $val) {
+                $quantity = $val['quantity'];
+                $product_variation_id = $val['product_variation_id'];
+                $product_id = $val['product_id'];
+                custom("
+            UPDATE product_variation SET stock = if(stock < $quantity,0, stock - $quantity), sold = if(sold IS NULL, $quantity , sold + $quantity) WHERE id = $product_variation_id;
+            UPDATE product SET sold = if(sold IS NULL, $quantity , sold + $quantity) WHERE id = $product_id;
+            ");
+                $this->createOrderDetail($order_id, $val['product_variation_id'], $val['price'], $val["quantity"]);
+            }
+            delete('shopping_cart', ['user_id' => $user_id]);
+            $this->shipping_model->create($order_id, $user_id, shipping_status[0]);
+
+            $res['order_id'] = $order_id;
+            dd($res);
+            exit();
+        } catch (ErrorException $e) {
+            $this->render_view->loadErrors(400, $e->getMessage() . " on line " . $e->getLine() . " in file " . $e->getfile());
+        }
     }
 
     function listStatus()

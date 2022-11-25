@@ -45,23 +45,28 @@ class productModel extends Controllers
         GROUP BY color
         ");
 
-        $size = custom("SELECT size
-        FROM product_variation
-        WHERE product_id = $id
-        GROUP BY size
-        ");
+        // $size = custom("SELECT size
+        // FROM product_variation
+        // WHERE product_id = $id
+        // GROUP BY size
+        // ");
 
-        $a = array();
-        if ($size) {
-            $a = array_column($size, 'size');;
-        }
-        $obj['size'] = $a;
+        // $a = array();
+        // if ($size) {
+        //     $a = array_column($size, 'size');;
+        // }
+
 
         $obj['stock'] = custom("SELECT id,color,size,sub_price,sum(stock) AS stock
         FROM product_variation
         WHERE product_id = $id
         GROUP BY color,size
         ");
+
+        $a = array();
+        $a = array_column($obj['stock'], 'size');
+
+        $obj['size'] = array_unique($a);
 
         $wish = custom("
         SELECT *
