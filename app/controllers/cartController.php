@@ -23,35 +23,36 @@ class cartController extends Controllers
         exit();
     }
 
-    public function addProduct($id = 0)
+    public function addToCart()
     {
         $this->middle_ware->checkRequest('POST');
         $this->middle_ware->userOnly();
         $json = file_get_contents("php://input");
         $sent_vars = json_decode($json, TRUE);
 
-        if (empty($sent_vars['quantity'])) {
-            $this->loadErrors(400, 'Error: quantity value invalid');
+        if (empty($sent_vars['quantity']) || empty($sent_vars['product_variation_id'])) {
+            $this->loadErrors(400, 'Không đủ trường dữ liệu');
         }
-        $table = 'shoppingCart';
-        $userID = $_SESSION['user']['ID'];
-        $product = $this->product_model->getDetail($id, 1);
+        $id = $sent_vars['product_variation_id'];
+        $table = 'shopping_cart';
+        $userID = $_SESSION['user']['id'];
+        $product = $this->cart_model->checkproduct($id, 1);
         if (!$product) {
-            $this->loadErrors(404, 'Not found product');
+            $this->loadErrors(404, 'Không tìm thấy sản phẩm');
         }
 
         $condition = [
-            'userID' => $userID,
-            'productID' => $id,
+            'user_id' => $userID,
+            'product_variation_id' => $id,
         ];
-        $obj = selectOne('shoppingCart', $condition);
+        $obj = selectOne('shopping_cart', $condition);
 
 
 
         if (!$obj) {
             $res = $this->cart_model->getCart($userID);
             if (count($res) > 10) {
-                $this->loadErrors(400, 'Your cart is full of slot');
+                $this->loadErrors(400, 'Giỏ hàng của bạn đã đầy');
             }
 
             $condition['quantity'] = $sent_vars['quantity'];
@@ -65,14 +66,14 @@ class cartController extends Controllers
         }
 
         if ($obj['quantity'] > 5) {
-            $this->loadErrors(400, 'You cannot add more than 6 quantities of this product');
+            $this->loadErrors(400, 'Bạn không thể thêm quá 6 sản phẩm này vào giỏ hàng');
         }
 
         $quantity['quantity'] = $obj['quantity'] + $sent_vars['quantity'];
         if ($quantity['quantity'] > 6) {
             $quantity['quantity'] = 6;
         }
-        update($table, ['ID' => $obj['ID']], $quantity);
+        update($table, ['id' => $obj['id']], $quantity);
         $res = $this->cart_model->getCart($userID);
         dd($res);
         exit();

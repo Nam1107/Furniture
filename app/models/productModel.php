@@ -74,9 +74,6 @@ class productModel extends Controllers
             $obj['wish_list'] = 0;
         } else $obj['wish_list'] = 1;
 
-
-
-
         return ($obj);
     }
 
