@@ -13,12 +13,13 @@ class cartController extends Controllers
     public function getCart()
     {
         $this->middle_ware->checkRequest('GET');
-        $userID = 0;
         $obj = $this->middle_ware->authenToken();
         if ($obj['status'] == 1) {
-            $userID = $_SESSION['user']['id'];
+            $res = $this->cart_model->getCart();
         }
-        $res = $this->cart_model->getCart($userID);
+        $res['numOfProduct'] = 0;
+        $res['totalCart'] = 0;
+        $res['obj'] = null;
         dd($res);
         exit();
     }
@@ -35,14 +36,14 @@ class cartController extends Controllers
         }
         $id = $sent_vars['product_variation_id'];
         $table = 'shopping_cart';
-        $userID = $_SESSION['user']['id'];
+        $user_id = $_SESSION['user']['id'];
         $product = $this->cart_model->checkproduct($id, 1);
         if (!$product) {
             $this->loadErrors(404, 'Không tìm thấy sản phẩm');
         }
 
         $condition = [
-            'user_id' => $userID,
+            'user_id' => $user_id,
             'product_variation_id' => $id,
         ];
         $obj = selectOne('shopping_cart', $condition);
@@ -50,7 +51,7 @@ class cartController extends Controllers
 
 
         if (!$obj) {
-            $res = $this->cart_model->getCart($userID);
+            $res = $this->cart_model->getCart();
             if (count($res) > 10) {
                 $this->loadErrors(400, 'Giỏ hàng của bạn đã đầy');
             }
@@ -60,7 +61,7 @@ class cartController extends Controllers
                 $condition['quantity'] = 6;
             }
             create($table, $condition);
-            $res = $this->cart_model->getCart($userID);
+            $res = $this->cart_model->getCart();
             dd($res);
             exit();
         }
@@ -74,7 +75,7 @@ class cartController extends Controllers
             $quantity['quantity'] = 6;
         }
         update($table, ['id' => $obj['id']], $quantity);
-        $res = $this->cart_model->getCart($userID);
+        $res = $this->cart_model->getCart();
         dd($res);
         exit();
     }
@@ -83,7 +84,7 @@ class cartController extends Controllers
     {
         $this->middle_ware->checkRequest('DELETE');
         $this->middle_ware->userOnly();
-        $userID = $_SESSION['user']['id'];
+        $user_id = $_SESSION['user']['id'];
         $product = $this->cart_model->checkProduct($id, 1);
         if (!$product) {
             $this->loadErrors(404, 'Không tìm thấy sản phẩm');
@@ -95,11 +96,11 @@ class cartController extends Controllers
 
         $table = 'shopping_cart';
         $condition = [
-            'user_id' => $userID,
+            'user_id' => $user_id,
             'product_variation_id' => $id,
         ];
         delete($table, $condition);
-        $res['msg'] = 'Thành công';
+        $res = $this->cart_model->getCart();
         dd($res);
         exit();
     }
@@ -132,46 +133,7 @@ class cartController extends Controllers
         $quantity = $sent_vars['quantity'];
 
         update($table, ['id' => $obj['id']], ['quantity' => $quantity]);
-        $res['msg'] = 'Thành công';
-        dd($res);
-        exit();
-    }
-
-    public function incrementByOne($id = 0)
-    {
-        $this->middle_ware->checkRequest('PUT');
-        $this->middle_ware->userOnly();
-        $userID = $_SESSION['user']['ID'];
-        $obj = $this->cart_model->getProductInCart($id);
-        if (!$obj) {
-            $this->loadErrors(400, 'Cannot found product in your cart');
-        }
-        if ($obj['quantity'] > 5) {
-            $this->loadErrors(400, 'You cannot add more than 6 quantities of this product');
-        }
-        custom("
-        UPDATE shoppingCart SET quantity = if(quantity < 6,quantity + 1, 6) WHERE userID = $userID AND productID = $id
-        ");
-        $res = $this->cart_model->getCart($userID);
-        dd($res);
-        exit();
-    }
-
-    public function decrementByOne($id = 0)
-    {
-        $this->middle_ware->checkRequest('PUT');
-        $this->middle_ware->userOnly();
-        $table = 'shoppingCart';
-        $userID = $_SESSION['user']['ID'];
-        $obj = $this->cart_model->getProductInCart($id);
-        if (!$obj) {
-            $this->loadErrors(400, 'Cannot found product in your cart');
-        }
-
-        custom("
-        UPDATE shoppingCart SET quantity = if(quantity > 1 ,quantity - 1, 1) WHERE userID = $userID AND productID = $id
-        ");
-        $res = $this->cart_model->getCart($userID);
+        $res = $this->cart_model->getCart();
         dd($res);
         exit();
     }

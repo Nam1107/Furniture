@@ -12,12 +12,13 @@ class cartModel
                 ");
         return $res;
     }
-    public function getCart($id)
+    public function getCart()
     {
+        $user_id = $_SESSION['user']['id'];
         $shoppingCart = custom("
         SELECT shopping_cart.id,shopping_cart.user_id,product.id AS product_id,product.name,product_variation.id AS product_variation_id, product.description,product.material, product_variation.color,product_variation.image,product_variation.size,shopping_cart.quantity,(product_variation.sub_price+product.price) AS price,product_variation.stock,IF(quantity<product_variation.stock,1, 0) AS canBuy
         FROM shopping_cart,product_variation,product
-        WHERE shopping_cart.user_id = $id
+        WHERE shopping_cart.user_id = $user_id
         AND product.id = product_variation.product_id
         AND shopping_cart.product_variation_id = product_variation.id
         GROUP BY shopping_cart.product_variation_id
